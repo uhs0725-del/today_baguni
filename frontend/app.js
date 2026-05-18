@@ -225,20 +225,16 @@
   }
 
   // Single source of truth for "what is picked". Re-derives, from `selected`,
-  // every #recmenu chip's selected style, every visible card's
-  // .pick-btn/.is-picked, the recmenu CTA enabled state, and the action bar.
-  // Card 담기 and the recmenu chip for the same ingredient always reflect the
-  // same state because both read this one `selected` array. Call after ANY
-  // selection change (chip toggle, card toggle, clear) and at end of
-  // render()/renderCards().
+  // the WHOLE recmenu basket (auto recommendations + user-added), every
+  // visible card's .pick-btn/.is-picked, the recmenu CTA enabled state, and
+  // the action bar. Card 담기 and the recmenu chip for the same ingredient
+  // always reflect the same state because both read this one `selected`
+  // array. Call after ANY selection change (chip toggle, card toggle, clear)
+  // and at end of render()/renderCards().
   function syncSelectionUI() {
-    // recmenu chips
-    var chips = els.recmenuChips.querySelectorAll(".recmenu__chip");
-    chips.forEach(function (chip) {
-      var on = selected.indexOf(chip.getAttribute("data-name")) !== -1;
-      chip.classList.toggle("is-selected", on);
-      chip.setAttribute("aria-pressed", on ? "true" : "false");
-    });
+    // recmenu chips: full re-render so user-added chips appear/disappear by
+    // membership and every chip gets its correct per-state style.
+    paintRecmenuChips();
     // visible cards
     var cards = els.cards.querySelectorAll(".card");
     cards.forEach(function (card) {
@@ -551,6 +547,76 @@
     return picks;
   }
 
+  // Look up an item by name in the full fetched list (for the price-change
+  // suffix on a chip). Returns undefined if not found.
+  function itemByName(name) {
+    for (var i = 0; i < allItems.length; i++) {
+      if (allItems[i].name === name) return allItems[i];
+    }
+    return undefined;
+  }
+
+  // Build one toggle chip. `kind` is one of:
+  //   "rec-on"  : auto recommendation, currently selected (recommended look)
+  //   "rec-off" : auto recommendation, de-selected (outline/muted look,
+  //               still tappable to re-add — it's a standing recommendation)
+  //   "pick"    : user-added (in `selected`, NOT a top3 recommendation) —
+  //               distinct color; only ever rendered while selected
+  // Tapping toggles membership in the SAME shared `selected[]` the card 담기
+  // uses, then syncs all UI so card and chip never diverge.
+  function buildRecmenuChip(name, kind) {
+    var chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "recmenu__chip";
+    if (kind === "rec-on") {
+      chip.className += " is-selected";
+    } else if (kind === "pick") {
+      chip.className += " is-selected recmenu__chip--pick";
+    } else {
+      // "rec-off": de-selected standing recommendation (outline look).
+      chip.className += " recmenu__chip--rec-off";
+    }
+    chip.setAttribute("data-name", name);
+    chip.setAttribute(
+      "aria-pressed",
+      kind === "rec-off" ? "false" : "true"
+    );
+    chip.appendChild(document.createTextNode(name));
+    var it = itemByName(name);
+    if (it && it.change_pct !== null && it.change_pct !== undefined) {
+      var pct = document.createElement("span");
+      pct.className = "recmenu__pct";
+      pct.textContent = "▼" + Math.abs(Math.round(it.change_pct)) + "%";
+      chip.appendChild(pct);
+    }
+    chip.addEventListener("click", function () {
+      toggleSelected(name);
+    });
+    return chip;
+  }
+
+  // Re-render #recmenu-chips as the WHOLE basket, in order: every auto
+  // recommendation (top3Names, in their existing order) — selected or not —
+  // then any USER-ADDED selected ingredient (in `selected` but NOT a top3),
+  // in selection order. Auto+selected -> recommended look; auto+deselected ->
+  // outline look; user-added -> distinct "내가 담음" color. Pure paint from
+  // `selected` + `top3Names`; safe to call on every selection change.
+  function paintRecmenuChips() {
+    els.recmenuChips.innerHTML = "";
+    top3Names.forEach(function (name) {
+      var on = selected.indexOf(name) !== -1;
+      els.recmenuChips.appendChild(
+        buildRecmenuChip(name, on ? "rec-on" : "rec-off")
+      );
+    });
+    selected.forEach(function (name) {
+      if (top3Names.indexOf(name) === -1) {
+        els.recmenuChips.appendChild(buildRecmenuChip(name, "pick"));
+      }
+    });
+  }
+
+  // Compute the recommended 3, decide block visibility, then paint the union.
   function renderRecmenu() {
     var picks = computeTop3();
     if (picks.length === 0) {
@@ -558,28 +624,7 @@
       els.recmenuChips.innerHTML = "";
       return;
     }
-    els.recmenuChips.innerHTML = "";
-    picks.forEach(function (it) {
-      // Toggle chip: adds/removes this ingredient from the SAME `selected[]`
-      // the card 담기 uses (one shared basket). State is painted by
-      // syncSelectionUI(), so card and chip always stay in sync.
-      var chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "recmenu__chip";
-      chip.setAttribute("data-name", it.name);
-      chip.setAttribute("aria-pressed", "false");
-      chip.appendChild(document.createTextNode(it.name));
-      if (it.change_pct !== null && it.change_pct !== undefined) {
-        var pct = document.createElement("span");
-        pct.className = "recmenu__pct";
-        pct.textContent = "▼" + Math.abs(Math.round(it.change_pct)) + "%";
-        chip.appendChild(pct);
-      }
-      chip.addEventListener("click", function () {
-        toggleSelected(it.name);
-      });
-      els.recmenuChips.appendChild(chip);
-    });
+    paintRecmenuChips();
     els.recmenu.hidden = false;
   }
 

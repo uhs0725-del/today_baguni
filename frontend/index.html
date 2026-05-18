@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 장바구니" />
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/static/style.css?v=7" />
+  <link rel="stylesheet" href="/static/style.css?v=8" />
 </head>
 <body>
   <div class="app">
@@ -24,7 +24,11 @@
 
     <div class="recmenu" id="recmenu" hidden>
       <p class="recmenu__title">오늘의 추천 메뉴</p>
-      <p class="recmenu__sub">평소보다 가장 저렴한 3가지</p>
+      <p class="recmenu__sub">추천 3가지 + 내가 담은 재료 (눌러서 빼고 더하기)</p>
+      <p class="recmenu__legend">
+        <span class="recmenu__legend-item"><span class="recmenu__dot recmenu__dot--rec"></span>추천</span>
+        <span class="recmenu__legend-item"><span class="recmenu__dot recmenu__dot--pick"></span>내가 담음</span>
+      </p>
       <div class="recmenu__chips" id="recmenu-chips"></div>
       <button class="recmenu__go" id="recmenu-go" type="button">선택한 재료로 레시피 보기</button>
     </div>
@@ -84,7 +88,7 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=7"></script>
+  <script src="/static/app.js?v=8"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW reg failed',e)});});}</script>
 </body>
 </html>

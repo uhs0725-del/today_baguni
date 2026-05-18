@@ -124,6 +124,38 @@ body.has-actionbar .app {
   color: var(--ink-faint);
 }
 
+/* Tiny color key so "추천" vs "내가 담음" chips are self-explanatory. */
+.recmenu__legend {
+  margin-top: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.recmenu__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.recmenu__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.recmenu__dot--rec {
+  background: var(--accent);
+}
+
+.recmenu__dot--pick {
+  background: var(--green);
+}
+
 .recmenu__chips {
   margin-top: 12px;
   display: flex;
@@ -148,11 +180,30 @@ body.has-actionbar .app {
   transform: scale(0.97);
 }
 
-/* Selected = in the shared basket (mirrors the card 담기 picked state). */
+/* Auto recommendation, currently selected = the recommended look (solid
+   accent). Mirrors the card 담기 picked state for the same ingredient. */
 .recmenu__chip.is-selected {
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
+}
+
+/* Auto recommendation the user removed: an OUTLINE/muted version of the
+   recommended look. Still tappable to re-add — it's a standing suggestion. */
+.recmenu__chip--rec-off {
+  background: var(--card-bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* User-added (in the basket but NOT one of the 3 recommendations): a
+   distinct green so "내가 담음" reads clearly apart from the accent
+   recommendations. Reuses the existing green palette tokens. Wins over the
+   shared .is-selected accent fill via this more specific selector. */
+.recmenu__chip--pick.is-selected {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
 }
 
 .recmenu__chip .recmenu__pct {
@@ -162,6 +213,16 @@ body.has-actionbar .app {
 
 .recmenu__chip.is-selected .recmenu__pct {
   color: #d6e3ff;
+}
+
+/* On the de-selected (white) recommendation chip, keep the ▼NN% readable. */
+.recmenu__chip--rec-off .recmenu__pct {
+  color: var(--green);
+}
+
+/* On the green user-added chip, the ▼NN% needs a light tint, not green. */
+.recmenu__chip--pick.is-selected .recmenu__pct {
+  color: var(--green-bg);
 }
 
 .recmenu__go {

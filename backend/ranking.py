@@ -111,6 +111,79 @@ def is_all_staple(resolved_names: list[str]) -> bool:
     )
 
 
+def order_for_query(names: list[str]) -> list[str]:
+    """Lead the recipe query with the distinctive 'main' ingredient and put
+    the ubiquitous aromatics (양파/대파/마늘) LAST. External recipe search —
+    especially 만개의레시피's loose `q=` — over-weights the most common
+    token, so "삼겹살 양파" returns real 삼겹살+양파 dishes while
+    "양파 삼겹살" floods with onion-only recipes (verified against
+    만개의레시피). Stable otherwise; pure reordering, drops nothing."""
+    mains = [n for n in names if n not in STAPLE_INGREDIENTS]
+    staples = [n for n in names if n in STAPLE_INGREDIENTS]
+    return mains + staples
+
+
+# Dish-name synonym expansion for the content-match relevance filter. A
+# selected MAIN ingredient (display name) rarely appears verbatim in a recipe
+# title/ingredient line ("돼지 삼겹살" → titled "삼겹살양파볶음" / "제육볶음"),
+# so each entry maps a SUBSTRING of the display name to extra words that
+# strongly imply that ingredient. Substring match keeps it trivially editable
+# and covers variants ("수입 소갈비"/"한우 양지" both hit the 소 family).
+#
+# IMPORTANT: terms are SUBSTRING-matched against despaced Korean text, so a
+# bare single Hangul char would over-match catastrophically — e.g. "소"
+# appears inside 소금(salt)/소스(sauce)/채소, and "돈" inside many words, so
+# almost every recipe's ingredient line would falsely pass. We therefore use
+# only ≥2-char, ingredient-specific tokens here (the search keyword + display
+# tokens still cover the rest). Verified: dropping bare "소"/"돈" removes the
+# 양파오이무침/양파오징어덮밥 false-positives on a 한우 query while real beef
+# dishes (소고기미역국, 소불고기, 갈비찜) still match.
+_CONTENT_SYNONYMS: list[tuple[str, set[str]]] = [
+    ("돼지", {"돼지", "삼겹", "목살", "앞다리", "뒷다리", "제육", "두루치기", "수육", "돈가스", "돈까스", "돈부리", "돈볶음"}),
+    ("한우", {"쇠고기", "소고기", "한우", "불고기", "갈비"}),
+    ("소갈비", {"쇠고기", "소고기", "한우", "불고기", "갈비"}),
+    ("소 ", {"쇠고기", "소고기", "한우", "불고기", "갈비"}),
+    ("수입 소", {"쇠고기", "소고기", "한우", "불고기", "갈비"}),
+    ("닭", {"닭", "치킨"}),
+    ("계란", {"계란", "달걀", "에그"}),
+]
+
+# Fish/seafood display words that should also be searched as-is in titles.
+_FISH_WORDS = {
+    "고등어", "갈치", "오징어", "명태", "코다리", "동태", "새우",
+    "멸치", "김", "미역", "다시마",
+}
+
+
+def _despace_lower(text: str) -> str:
+    """Lowercase and drop ALL whitespace so substring checks are robust to
+    spacing differences ("소 고기" vs "소고기", "삼겹 살" vs "삼겹살")."""
+    return re.sub(r"\s+", "", (text or "").lower())
+
+
+def content_match_terms(name: str, keyword: str) -> set[str]:
+    """Term set used to decide a recipe genuinely uses this MAIN ingredient.
+
+    Returns lowercased, whitespace-stripped Korean strings; a recipe passes
+    for this ingredient if ANY term is a substring of its (despaced, lowered)
+    title/ingredient text. Always includes the search keyword and each
+    whitespace token of the display name; dict-driven synonyms broaden meat
+    so dish-named recipes still match, and fish words are added verbatim."""
+    terms: set[str] = set()
+    if keyword:
+        terms.add(keyword)
+    for tok in (name or "").split():
+        if tok:
+            terms.add(tok)
+    for needle, extra in _CONTENT_SYNONYMS:
+        if needle in name:
+            terms.update(extra)
+    for tok in (name or "").split():
+        if tok in _FISH_WORDS:
+            terms.add(tok)
+    return {t for t in (_despace_lower(x) for x in terms) if t}
+
+
 class Recommendation(BaseModel):
     name: str
     category: str

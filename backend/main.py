@@ -23,13 +23,16 @@ from pydantic import BaseModel
 from .kamis import get_today_prices
 from .recipes import gather_recipe_results
 from .ranking import (
+    STAPLE_INGREDIENTS,
     Recommendation,
     RecipeLink,
     RecipeSuggestion,
     build_combo_recipe_links,
     build_recipe_links,
+    content_match_terms,
     find_ingredient,
     is_all_staple,
+    order_for_query,
     rank,
     staple_only_suggestions,
 )
@@ -190,6 +193,12 @@ def get_combo_recipes(items: str = "") -> ComboRecipesResponse:
 
     all_staple = is_all_staple(resolved_names)
 
+    # Lead the recipe query with the main ingredient (양파/대파/마늘 last) so
+    # 만개/네이버/유튜브 don't flood with onion-only dishes.
+    kw_by_name = dict(zip(resolved_names, keywords))
+    resolved_names = order_for_query(resolved_names)
+    keywords = [kw_by_name[n] for n in resolved_names]
+
     return ComboRecipesResponse(
         items=resolved_names,
         recipe_links=build_combo_recipe_links(keywords),
@@ -207,14 +216,34 @@ def get_recipe_results(items: str = "") -> RecipeResultsResponse:
     names = [n.strip() for n in items.split(",") if n.strip()]
 
     resolved_names: list[str] = []
+    kw_by_name: dict[str, str] = {}
     for name in names:
         meta = find_ingredient(name)
         if meta is None:
             continue
         if meta.name not in resolved_names:
             resolved_names.append(meta.name)
+            kw_by_name[meta.name] = meta.search_keyword
 
-    data = gather_recipe_results(resolved_names)
+    # Query with the SEARCH KEYWORD (e.g. "삼겹살", not the display name
+    # "돼지 삼겹살") and lead with the main ingredient (양파/대파/마늘 last).
+    # 만개의레시피's loose q= floods with onion dishes for "돼지 삼겹살 양파"
+    # but returns real 삼겹살+양파 dishes for "삼겹살 양파" (verified).
+    ordered = order_for_query(resolved_names)
+    query_terms = [kw_by_name[n] for n in ordered]
+
+    # Relevance filter: keep only results that genuinely use the MAIN
+    # (non-staple) ingredient(s). 만개's loose q= otherwise floods with
+    # onion-only dishes ("양파 오이무침") for 양파+돼지삼겹살. One match-term
+    # set per MAIN name, in the SAME order as query_terms. An all-staple
+    # selection (no main) → main_terms=[] ⇒ NO filtering (the all-staple
+    # combo guidance covers that case; behaviour unchanged).
+    main_terms = [
+        content_match_terms(n, kw_by_name[n])
+        for n in ordered
+        if n not in STAPLE_INGREDIENTS
+    ]
+    data = gather_recipe_results(query_terms, main_terms=main_terms)
     return RecipeResultsResponse(**data)
 
 
