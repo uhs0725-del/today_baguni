@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
   <title>오늘의 장바구니 · 자취 식탁</title>
-  <link rel="stylesheet" href="/static/style.css?v=5" />
+  <link rel="stylesheet" href="/static/style.css?v=6" />
 </head>
 <body>
   <div class="app">
@@ -19,7 +19,7 @@
 
     <div class="recmenu" id="recmenu" hidden>
       <p class="recmenu__title">오늘의 추천 메뉴</p>
-      <p class="recmenu__sub">평소보다 가장 싸진 3가지</p>
+      <p class="recmenu__sub">평소보다 가장 저렴한 3가지</p>
       <div class="recmenu__chips" id="recmenu-chips"></div>
       <button class="recmenu__go" id="recmenu-go" type="button">선택한 재료로 레시피 보기</button>
     </div>
@@ -46,7 +46,7 @@
       </div>
 
       <div class="sorts" id="sorts" role="group" aria-label="정렬" hidden>
-        <button class="sortbtn is-active" type="button" data-sort="discount" aria-pressed="true">평소 싸진순</button>
+        <button class="sortbtn is-active" type="button" data-sort="discount" aria-pressed="true">평소보다 저렴해진순</button>
         <button class="sortbtn" type="button" data-sort="price" aria-pressed="false">가격 낮은순</button>
         <button class="sortbtn" type="button" data-sort="name" aria-pressed="false">이름순</button>
         <button class="sortbtn" type="button" data-sort="score" aria-pressed="false">추천순</button>
@@ -79,6 +79,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=5"></script>
+  <script src="/static/app.js?v=6"></script>
 </body>
 </html>
