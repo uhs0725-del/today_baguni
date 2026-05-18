@@ -1,0 +1,868 @@
+:root {
+  --bg: #f5f6f8;
+  --card-bg: #ffffff;
+  --ink: #1a1c20;
+  --ink-soft: #6b7280;
+  --ink-faint: #9aa1ac;
+  --line: #ececf0;
+  --accent: #2f6bff;
+  --green: #137a45;
+  --green-bg: #e3f6ec;
+  --red: #c0392b;
+  --red-bg: #fdecea;
+  --gray-pill: #eef0f3;
+  --radius: 18px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Malgun Gothic", "Noto Sans KR", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+body {
+  min-height: 100vh;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 18px 64px;
+}
+
+/* When the selection bar is visible, keep the last card clear of it. */
+body.has-actionbar .app {
+  padding-bottom: 120px;
+}
+
+/* ---------- header ---------- */
+.header {
+  padding: 16px 4px 22px;
+}
+
+.header__title {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.header__date {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.header__sub {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--ink-faint);
+}
+
+.header__note {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+.badge {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.badge--sample {
+  background: var(--gray-pill);
+  color: var(--ink-soft);
+}
+
+/* `hidden` attr must win over `.badge { display:inline-block }` so the
+   "샘플 데이터" badge disappears when serving live KAMIS data. */
+.badge[hidden] {
+  display: none;
+}
+
+/* ---------- recommended menu ---------- */
+.recmenu {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px 18px;
+  margin: 4px 0 16px;
+}
+
+.recmenu[hidden] {
+  display: none;
+}
+
+.recmenu__title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.recmenu__sub {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+.recmenu__chips {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.recmenu__chip {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--gray-pill);
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.recmenu__chip:active {
+  transform: scale(0.97);
+}
+
+/* Selected = in the shared basket (mirrors the card 담기 picked state). */
+.recmenu__chip.is-selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.recmenu__chip .recmenu__pct {
+  margin-left: 5px;
+  color: var(--green);
+}
+
+.recmenu__chip.is-selected .recmenu__pct {
+  color: #d6e3ff;
+}
+
+.recmenu__go {
+  margin-top: 14px;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.recmenu__go:active {
+  opacity: 0.85;
+}
+
+.recmenu__go:disabled {
+  background: var(--gray-pill);
+  color: var(--ink-faint);
+  cursor: default;
+}
+
+.recmenu__go:disabled:active {
+  opacity: 1;
+}
+
+/* ---------- states ---------- */
+.state {
+  text-align: center;
+  padding: 64px 16px;
+  color: var(--ink-soft);
+}
+
+.state__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.state__desc {
+  font-size: 14px;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 16px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retry-btn {
+  margin-top: 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.retry-btn:active {
+  transform: scale(0.97);
+}
+
+/* ---------- cards ---------- */
+.cards {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.card__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.card__name {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.card__price {
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.price-tag {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  background: var(--gray-pill);
+  padding: 2px 7px;
+  border-radius: 999px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.card__badges {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--gray-pill);
+  color: var(--ink-soft);
+}
+
+.tag--solo {
+  background: #eaf0ff;
+  color: var(--accent);
+}
+
+.tag--season {
+  background: #fff3e0;
+  color: #b26a00;
+}
+
+.card__tip {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+.pill {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pill--down {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.pill--up {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.pill--flat {
+  background: var(--gray-pill);
+  color: var(--ink-soft);
+}
+
+/* ---------- category filter chips ---------- */
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 2px 4px 14px;
+  margin: 0 -4px;
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 15px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.chip:active {
+  transform: scale(0.97);
+}
+
+.chip.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ---------- sort selector ---------- */
+.sorts {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 4px 14px;
+  margin: 0 -4px;
+}
+
+.sorts::-webkit-scrollbar {
+  display: none;
+}
+
+.sorts[hidden] {
+  display: none;
+}
+
+.sortbtn {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sortbtn:active {
+  transform: scale(0.97);
+}
+
+.sortbtn.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.feed-empty {
+  text-align: center;
+  padding: 48px 16px;
+  font-size: 14px;
+  color: var(--ink-faint);
+}
+
+/* ---------- 담기 select ---------- */
+.card__side {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.pick-btn {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pick-btn:active {
+  transform: scale(0.97);
+}
+
+.card.is-picked {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: #f5f8ff;
+}
+
+.card.is-picked .pick-btn {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ---------- sticky action bar ---------- */
+.actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+  background: var(--card-bg);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(16, 24, 40, 0.06);
+}
+
+.actionbar[hidden] {
+  display: none;
+}
+
+.actionbar__count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.actionbar__clear {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  padding: 8px 4px;
+  cursor: pointer;
+}
+
+.actionbar__go {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.actionbar__go:active {
+  opacity: 0.85;
+}
+
+/* ---------- combo bottom sheet ---------- */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.4);
+}
+
+.sheet__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--card-bg);
+  border-radius: 20px 20px 0 0;
+  padding: 8px 18px calc(22px + env(safe-area-inset-bottom));
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: sheet-up 0.22s ease;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.sheet__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 8px;
+}
+
+.sheet__title {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.sheet__close {
+  font-size: 16px;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.sheet__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 18px;
+}
+
+.sheet__chip {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eaf0ff;
+  color: var(--accent);
+}
+
+.sheet__msg {
+  font-size: 14px;
+  color: var(--ink-soft);
+  padding: 14px 2px 18px;
+}
+
+.sheet__hint {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  background: var(--bg);
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin: 6px 0 16px;
+}
+
+.sheet__suglabel {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.sheet__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.sheet__sug {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  background: #eaf0ff;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.sheet__sug:active {
+  opacity: 0.85;
+}
+
+/* ---------- expandable detail ---------- */
+.card__detail {
+  display: none;
+  padding: 0 18px 18px;
+  border-top: 1px solid var(--line);
+  animation: fade 0.18s ease;
+}
+
+.card.is-open .card__detail {
+  display: block;
+}
+
+.card.is-open .card__head {
+  padding-bottom: 12px;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.detail__label {
+  margin: 16px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.reasons {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reasons li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.reasons li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.detail__tip {
+  font-size: 14px;
+  color: var(--ink-soft);
+  background: var(--bg);
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.detail__baseline {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.recipe-links {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.recipe-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px 6px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.recipe-btn:active {
+  opacity: 0.85;
+}
+
+/* ---------- inline recipe results (combo sheet) ---------- */
+.rr-wrap {
+  margin-top: 4px;
+}
+
+.rr-section {
+  margin-bottom: 18px;
+}
+
+.rr-head {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.rr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rr-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg);
+  text-decoration: none;
+  color: var(--ink);
+  transition: opacity 0.15s;
+}
+
+.rr-card:active {
+  opacity: 0.85;
+}
+
+.rr-thumb {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--gray-pill);
+}
+
+.rr-cardbody {
+  min-width: 0;
+  flex: 1;
+}
+
+.rr-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rr-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rr-more {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.rr-more:active {
+  opacity: 0.7;
+}
+
+/* ---------- footer ---------- */
+.footer {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-faint);
+  padding: 0 12px;
+}
+
+@media (max-width: 400px) {
+  .app {
+    padding: 18px 14px 56px;
+  }
+  body.has-actionbar .app {
+    padding-bottom: 116px;
+  }
+  .header__title {
+    font-size: 24px;
+  }
+  .recmenu {
+    padding: 14px 16px 16px;
+  }
+  .card__name {
+    font-size: 18px;
+  }
+  .recipe-links {
+    grid-template-columns: 1fr;
+  }
+  .actionbar {
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  }
+  .actionbar__go {
+    padding: 11px 14px;
+  }
+}

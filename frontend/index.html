@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>오늘의 장바구니 · 자취 식탁</title>
+  <link rel="stylesheet" href="/static/style.css?v=5" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1 class="header__title">오늘의 장바구니</h1>
+      <p class="header__date" id="today-date">불러오는 중…</p>
+      <span class="badge badge--sample" id="sample-badge" hidden>샘플 데이터 (KAMIS 키 연결 전)</span>
+      <p class="header__sub">지금 평소보다 싸고, 1인이 안 버리고 잘 먹을 재료순</p>
+      <p class="header__note">표시 가격은 KAMIS 전국 평균 소매 기준가예요. 동네 마트·시장·온라인에 따라 달라질 수 있어요.</p>
+    </header>
+
+    <div class="recmenu" id="recmenu" hidden>
+      <p class="recmenu__title">오늘의 추천 메뉴</p>
+      <p class="recmenu__sub">평소보다 가장 싸진 3가지</p>
+      <div class="recmenu__chips" id="recmenu-chips"></div>
+      <button class="recmenu__go" id="recmenu-go" type="button">선택한 재료로 레시피 보기</button>
+    </div>
+
+    <main class="feed" id="feed" aria-live="polite">
+      <div class="state" id="loading-state">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>오늘 장바구니 고르는 중…</p>
+      </div>
+
+      <div class="state state--error" id="error-state" hidden>
+        <p class="state__title">불러오지 못했어요</p>
+        <p class="state__desc">잠시 후 다시 시도해 주세요.</p>
+        <button class="retry-btn" id="retry-btn" type="button">다시 시도</button>
+      </div>
+
+      <div class="filters" id="filters" role="tablist" aria-label="분류 필터" hidden>
+        <button class="chip is-active" type="button" data-group="전체" aria-pressed="true">전체</button>
+        <button class="chip" type="button" data-group="채소" aria-pressed="false">채소</button>
+        <button class="chip" type="button" data-group="고기·계란" aria-pressed="false">고기·계란</button>
+        <button class="chip" type="button" data-group="수산물" aria-pressed="false">수산물</button>
+        <button class="chip" type="button" data-group="과일" aria-pressed="false">과일</button>
+        <button class="chip" type="button" data-group="곡물·기타" aria-pressed="false">곡물·기타</button>
+      </div>
+
+      <div class="sorts" id="sorts" role="group" aria-label="정렬" hidden>
+        <button class="sortbtn is-active" type="button" data-sort="discount" aria-pressed="true">평소 싸진순</button>
+        <button class="sortbtn" type="button" data-sort="price" aria-pressed="false">가격 낮은순</button>
+        <button class="sortbtn" type="button" data-sort="name" aria-pressed="false">이름순</button>
+        <button class="sortbtn" type="button" data-sort="score" aria-pressed="false">추천순</button>
+      </div>
+
+      <ul class="cards" id="cards" hidden></ul>
+
+      <p class="feed-empty" id="feed-empty" hidden>이 분류는 오늘 추천이 없어요</p>
+    </main>
+
+    <footer class="footer">
+      <p>가격은 KAMIS 농산물유통정보 기준 · 레시피는 외부 검색 결과로 연결됩니다</p>
+    </footer>
+  </div>
+
+  <div class="actionbar" id="actionbar" hidden>
+    <span class="actionbar__count" id="actionbar-count">재료 0개 선택</span>
+    <button class="actionbar__clear" id="actionbar-clear" type="button">비우기</button>
+    <button class="actionbar__go" id="actionbar-go" type="button">이 재료로 레시피 찾기</button>
+  </div>
+
+  <div class="sheet" id="combo-sheet" hidden>
+    <div class="sheet__backdrop" id="combo-backdrop"></div>
+    <div class="sheet__panel" role="dialog" aria-modal="true" aria-label="선택한 재료 레시피">
+      <div class="sheet__bar">
+        <p class="sheet__title">선택한 재료로 레시피</p>
+        <button class="sheet__close" id="combo-close" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="sheet__body" id="combo-body"></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=5"></script>
+</body>
+</html>

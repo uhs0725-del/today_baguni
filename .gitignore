@@ -1,0 +1,19 @@
+# secrets — never commit
+.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# root-level scratch / API dumps (anchored: does NOT touch scripts/fixtures/)
+/_*.json
+/_*.txt
+
+# os junk
+.DS_Store
+Thumbs.db
+
+# NOTE: scripts/fixtures/, backend/data/ (incl. baseline.json), Procfile,
+# runtime.txt, requirements.txt are intentionally TRACKED — do not ignore.
