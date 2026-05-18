@@ -165,7 +165,16 @@ def _row_from_kamis(raw: dict) -> Optional[PriceRow]:
     if cls and cls != _RETAIL_CLS:
         return None
 
-    name = str(raw.get(_FIELD_ITEM_NAME, "")).split("/")[0].strip()
+    category = str(raw.get(_FIELD_CATEGORY, "")).strip() or "기타"
+    cat_code = str(raw.get("category_code", "")).strip()
+    raw_name = str(raw.get(_FIELD_ITEM_NAME, "")).strip()
+    # Livestock (축산물): the cut is AFTER "/" (e.g. "돼지/삼겹살",
+    # "소/등심(1+등급)", "계란/특란10구(일반란)") — keep the FULL name so
+    # cuts/grades stay distinct. Everything else reduces "쌀/20kg" -> "쌀".
+    if cat_code == "500" or "축산" in category:
+        name = raw_name
+    else:
+        name = raw_name.split("/")[0].strip()
     if not name:
         return None
 
@@ -180,7 +189,6 @@ def _row_from_kamis(raw: dict) -> Optional[PriceRow]:
         change_pct = round((price - prev) / prev * 100, 1)
 
     unit = str(raw.get(_FIELD_UNIT, "")).strip() or "단위 미상"
-    category = str(raw.get(_FIELD_CATEGORY, "")).strip() or "기타"
 
     return PriceRow(
         item_name=name,

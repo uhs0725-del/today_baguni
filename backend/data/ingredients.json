@@ -72,28 +72,76 @@
     "search_keyword": "두부"
   },
   {
+    "name": "돼지 삼겹살",
+    "category": "축산물",
+    "solo_fit": 4,
+    "storage_tip": "200g씩 소분 냉동, 먹을 만큼만 꺼내 구이",
+    "season_months": [],
+    "search_keyword": "삼겹살"
+  },
+  {
+    "name": "돼지 목살",
+    "category": "축산물",
+    "solo_fit": 4,
+    "storage_tip": "1회분씩 소분 냉동, 구이·수육 다용도",
+    "season_months": [],
+    "search_keyword": "돼지목살"
+  },
+  {
+    "name": "돼지 앞다리살",
+    "category": "축산물",
+    "solo_fit": 4,
+    "storage_tip": "200g씩 소분 냉동, 볶음·찌개 활용도 최고·가성비",
+    "season_months": [],
+    "search_keyword": "돼지앞다리살"
+  },
+  {
+    "name": "돼지 갈비",
+    "category": "축산물",
+    "solo_fit": 3,
+    "storage_tip": "양념해 1회분씩 냉동, 굽거나 찜",
+    "season_months": [],
+    "search_keyword": "돼지갈비"
+  },
+  {
+    "name": "한우 등심",
+    "category": "축산물",
+    "solo_fit": 3,
+    "storage_tip": "비싸니 소량만, 사면 바로 굽고 남으면 냉동",
+    "season_months": [],
+    "search_keyword": "소고기 등심"
+  },
+  {
+    "name": "한우 양지",
+    "category": "축산물",
+    "solo_fit": 4,
+    "storage_tip": "국거리용 소분 냉동, 미역국·뭇국에 한 줌",
+    "season_months": [],
+    "search_keyword": "소고기 양지 국거리"
+  },
+  {
+    "name": "수입 소갈비",
+    "category": "축산물",
+    "solo_fit": 3,
+    "storage_tip": "찜·구이용 1회분 소분 냉동, 한우보다 가성비",
+    "season_months": [],
+    "search_keyword": "소갈비찜"
+  },
+  {
+    "name": "닭고기",
+    "category": "축산물",
+    "solo_fit": 3,
+    "storage_tip": "통마리는 1인엔 많음, 부위별 잘라 냉동 or 백숙 한 솥",
+    "season_months": [],
+    "search_keyword": "닭볶음탕"
+  },
+  {
     "name": "계란",
     "category": "축산물",
     "solo_fit": 5,
-    "storage_tip": "뾰족한 쪽 아래로 냉장 안쪽 보관, 한 판 사도 한 달 감",
+    "storage_tip": "뾰족한 쪽 아래로 냉장 안쪽, 10구는 1인에 딱",
     "season_months": [],
-    "search_keyword": "계란"
-  },
-  {
-    "name": "닭다리살",
-    "category": "축산물",
-    "solo_fit": 4,
-    "storage_tip": "1회분씩 나눠 냉동, 먹기 전날 냉장 해동",
-    "season_months": [],
-    "search_keyword": "닭다리살"
-  },
-  {
-    "name": "돼지고기 앞다리살",
-    "category": "축산물",
-    "solo_fit": 4,
-    "storage_tip": "200g씩 소분 냉동, 볶음·찌개 다 쓰여 활용도 높음",
-    "season_months": [],
-    "search_keyword": "돼지고기 앞다리살"
+    "search_keyword": "계란요리"
   },
   {
     "name": "김치",
