@@ -1,0 +1,17 @@
+{
+  "name": "오늘의 장바구니",
+  "short_name": "장바구니",
+  "description": "지금 평소보다 싸고 1인이 안 버릴 식재료 추천",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f6f8",
+  "theme_color": "#2f6bff",
+  "lang": "ko",
+  "icons": [
+    {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/static/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

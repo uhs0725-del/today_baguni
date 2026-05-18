@@ -49,7 +49,12 @@ async def _no_cache_frontend(request, call_next):
     live data). API responses are unaffected."""
     response = await call_next(request)
     path = request.url.path
-    if path == "/" or path.startswith("/static"):
+    if (
+        path == "/"
+        or path == "/sw.js"
+        or path == "/manifest.json"
+        or path.startswith("/static")
+    ):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
 
@@ -216,6 +221,22 @@ def get_recipe_results(items: str = "") -> RecipeResultsResponse:
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(_FRONTEND_DIR / "index.html")
+
+
+@app.get("/sw.js")
+def service_worker() -> FileResponse:
+    """Serve the service worker from root so its scope is "/"."""
+    return FileResponse(
+        _FRONTEND_DIR / "sw.js", media_type="application/javascript"
+    )
+
+
+@app.get("/manifest.json")
+def manifest() -> FileResponse:
+    """Serve the web app manifest at a root-resolvable path."""
+    return FileResponse(
+        _FRONTEND_DIR / "manifest.json", media_type="application/manifest+json"
+    )
 
 
 # Static assets (style.css, app.js) served under /static.
