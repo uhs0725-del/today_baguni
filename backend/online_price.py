@@ -202,21 +202,18 @@ def _fallback_item(display_name: str) -> dict:
 # `search_keyword` in ingredients.json is RECIPE-oriented (바지락 →
 # "바지락칼국수", 계란 → "계란요리", 상추 → "상추겉절이") — great for the
 # recipe feature, but as a NAVER 쇼핑 query it literally searches the DISH,
-# which is why 바지락 returned 바지락칼국수. For a price lookup we instead
-# use the raw ingredient NAME (+ a coarse category word to bias NAVER sim
-# toward the fresh-grocery aisle), with a tiny override for names that are
-# still ambiguous. This is the input-side fix; the junk/processed reject
-# filters stay exactly as-is. DO NOT route search_keyword here again.
+# which is why 바지락 returned 바지락칼국수. For a price lookup we use the
+# raw ingredient NAME, with a tiny override for the few names whose raw
+# form is still processed-dominated on NAVER. This is the input-side fix;
+# the junk/processed reject filters stay exactly as-is.
+#
+# NOTE: a category-enrichment word ("수산물"/"채소"…) was tried and REMOVED
+# (2026-05-19): live data showed it pushed 상추/다시마/멸치 to bigger/
+# pricier listings while the bare name already returns the right product.
+# `category` is kept in the signature only for call-site stability.
+# ❗ DO NOT route search_keyword here again, and DO NOT re-add category
+# enrichment (it regressed 1인-size relevance — user's explicit choice).
 # ---------------------------------------------------------------------------
-
-# ingredients.json `category` → a true, low-risk enrichment word. 식량작물
-# (콩·쌀·팥…) and 축산물 (고기·계란) are intentionally NOT enriched — a
-# category word there is noise (계란 is handled by the override below).
-_CATEGORY_ENRICH = {
-    "수산물": "수산물",
-    "채소류": "채소",
-    "과일류": "과일",
-}
 
 # Highest priority: names whose raw form is STILL processed-dominated on
 # NAVER. Keep this list tiny and observation-driven (extend only after a
@@ -227,17 +224,16 @@ _QUERY_OVERRIDE = {
 }
 
 
-def build_naver_query(name: str, category: str) -> str:
-    """NAVER 쇼핑 query for a price lookup. Override → else raw name (+
-    category enrich). NEVER the recipe `search_keyword`. Pure/total —
-    empty name yields ""(caller already handles the empty case)."""
+def build_naver_query(name: str, category: str = "") -> str:
+    """NAVER 쇼핑 query for a price lookup: override → else the raw
+    ingredient NAME. NEVER the recipe `search_keyword`; NO category
+    enrichment (removed — regressed 1인 size). `category` is accepted but
+    unused (call-site stability). Pure/total — empty name yields "" (the
+    caller already handles the empty case)."""
     nm = (name or "").strip()
     if not nm:
         return ""
-    if nm in _QUERY_OVERRIDE:
-        return _QUERY_OVERRIDE[nm]
-    extra = _CATEGORY_ENRICH.get((category or "").strip())
-    return f"{nm} {extra}" if extra else nm
+    return _QUERY_OVERRIDE.get(nm, nm)
 
 
 def fetch_online_price(display_name: str, query: str) -> dict:
