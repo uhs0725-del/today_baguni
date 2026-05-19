@@ -88,6 +88,53 @@ def _looks_junk(title: str) -> bool:
         pass
     return False
 
+
+# Processed / prepared / derived products that merely CONTAIN the ingredient
+# name (e.g. 바지락 → "샘표 잔치국수 바지락칼국수 즉석식품"). For a raw-
+# ingredient price reference these are misleading, so they're rejected. The
+# NAVER category path is the strong signal; the title tokens are a backup
+# for when category fields are missing. HIGH-PRECISION only — and the
+# category list deliberately EXCLUDES 건어물/수산가공 so dried staples that
+# are legitimately sold that way (마른김·멸치·다시마·미역·북어) are NOT
+# over-rejected.
+_PROCESSED_TOKENS = (
+    "칼국수", "국수", "라면", "우동", "파스타", "수제비",
+    "밀키트", "즉석", "간편조리", "간편식", "레토르트",
+    "통조림", "액젓", "젓갈", "어묵", "맛살",
+    "분말", "가루", "즙", "진액", "농축", "엑기스",
+    "소스", "양념", "다시다", "다시팩", "육수", "조미료",
+    "잼", "버터", "스낵", "과자", "케이크", "쿠키", "초콜릿", "사탕",
+    "음료", "주스", "티백", "건강식품", "영양제", "보충제",
+    "선식", "시리얼", "지단", "훈제",
+)
+
+# NAVER category1~4 substrings that mean prepared/snack/derived — NOT a raw
+# grocery item. TIGHT on purpose (no broad "가공식품"/"건어물" — those would
+# wrongly kill dried seafood staples).
+_BAD_CATEGORY_TOKENS = (
+    "면류", "라면", "즉석", "간편조리", "레토르트", "통조림",
+    "과자", "스낵", "베이커리", "제과", "음료", "커피",
+    "주류", "건강식품", "영양제", "다이어트", "분유", "이유식",
+    "조미료", "소스",
+)
+
+
+def _looks_processed(title: str, categories: tuple) -> bool:
+    """True if the listing is a processed/prepared/derived product rather
+    than the raw ingredient — judged by NAVER category (strong) or, as a
+    backup when category fields are absent, a title token. Conservative:
+    when in doubt we'd rather show NO price (link-only) than a misleading
+    one — the user's explicit 2026-05-19 choice (trust > coverage)."""
+    cat = " ".join(c for c in categories if c)
+    if cat:
+        for tok in _BAD_CATEGORY_TOKENS:
+            if tok in cat:
+                return True
+    for tok in _PROCESSED_TOKENS:
+        if tok in (title or ""):
+            return True
+    return False
+
 # ---------------------------------------------------------------------------
 # Server-side cache: module-level dict keyed by the naver query string. TTL
 # ~12h so the NAVER quota is hit at most once per query per half-day. A soft
@@ -153,15 +200,19 @@ def _fallback_item(display_name: str) -> dict:
 def fetch_online_price(display_name: str, query: str) -> dict:
     """Online lowest-listing price for ONE ingredient via NAVER 쇼핑.
 
-    The representative item is the FIRST returned (sim-ranked). ANY problem
-    (missing keys, network, HTTP, parse, empty) ⇒ fallback item. Cached per
+    The representative item is the highest sim-ranked listing that passes
+    BOTH the junk/bulk filter AND the processed/wrong-category filter. If
+    none qualifies — or any problem occurs (missing keys, network, HTTP,
+    parse, empty) — we return the link-only fallback rather than fabricate a
+    guess (trust > coverage; user's explicit 2026-05-19 choice). Cached per
     query string (~12h) so a lazy expand never re-hits the NAVER quota for
     the same ingredient. Never raises.
 
     Returns dict keys: name, price, listing, url, mall, status, more_url.
-    `status` is "ok" on a real listing else "fallback". `more_url` is ALWAYS
-    set (even on fallback). NO ▼% / NO baseline is derived here — `listing`
-    carries the raw (often multipack) title so the unit is transparent.
+    `status` is "ok" on a CONFIDENT match else "fallback" (the UI shows the
+    NAVER 가격비교 deep-link only — no fabricated price). `more_url` is
+    ALWAYS set. NO ▼% / NO baseline is derived here — `listing` carries the
+    raw title so the unit is transparent.
     """
     cached = _cache_get(query)
     if cached is not None:
@@ -193,39 +244,50 @@ def fetch_online_price(display_name: str, query: str) -> dict:
         data = resp.json()
         listings = data.get("items") or []
         if listings:
-            # Prefer the highest sim-ranked listing that isn't obvious
-            # junk/bulk; if EVERY candidate looks junky, keep sim #1 — never
-            # degrade to no-data (the caption still warns 묶음/대용량).
+            # Pick the highest sim-ranked listing that is BOTH non-junk
+            # (bulk/foodservice/gift) AND not a processed/derived/wrong-
+            # category product (바지락 → "바지락칼국수 즉석식품"). If NONE
+            # qualifies we do NOT fabricate a guess from sim #1 — `item`
+            # stays the link-only fallback. Trust > coverage: the user's
+            # explicit 2026-05-19 choice (a wrong price is worse than none).
+            # DO NOT "restore" a sim#1 fallback here.
             top = None
             title = ""
             for cand in listings:
                 cand_title = _strip_tags(cand.get("title", ""))
-                if cand_title and not _looks_junk(cand_title):
-                    top = cand
-                    title = cand_title
-                    break
-            if top is None:
-                top = listings[0]
-                title = _strip_tags(top.get("title", ""))
-            link = top.get("link") or ""
-            mall = top.get("mallName") or ""
-            price: Optional[int] = None
-            try:
-                lprice = top.get("lprice")
-                if lprice is not None and str(lprice) != "":
-                    price = int(lprice)
-            except (TypeError, ValueError):
-                price = None
-            if title:
-                item = {
-                    "name": display_name,
-                    "price": price,
-                    "listing": title,
-                    "url": link,
-                    "mall": mall,
-                    "status": "ok",
-                    "more_url": _more_url(display_name),
-                }
+                if not cand_title or _looks_junk(cand_title):
+                    continue
+                cats = (
+                    cand.get("category1") or "",
+                    cand.get("category2") or "",
+                    cand.get("category3") or "",
+                    cand.get("category4") or "",
+                )
+                if _looks_processed(cand_title, cats):
+                    continue
+                top = cand
+                title = cand_title
+                break
+            if top is not None:
+                link = top.get("link") or ""
+                mall = top.get("mallName") or ""
+                price: Optional[int] = None
+                try:
+                    lprice = top.get("lprice")
+                    if lprice is not None and str(lprice) != "":
+                        price = int(lprice)
+                except (TypeError, ValueError):
+                    price = None
+                if title:
+                    item = {
+                        "name": display_name,
+                        "price": price,
+                        "listing": title,
+                        "url": link,
+                        "mall": mall,
+                        "status": "ok",
+                        "more_url": _more_url(display_name),
+                    }
     except Exception:
         # Tolerant by design — keep the fallback shape for THIS item.
         item = _fallback_item(display_name)
