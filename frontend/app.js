@@ -50,6 +50,14 @@
   var bevItems = null;
   var bevLoading = false;
 
+  // Online lowest price (NAVER 쇼핑) per ingredient, fetched LAZILY when a
+  // card is first expanded — calling it for every recommendation on load
+  // would blow the NAVER quota. name -> "loading" while in flight, else the
+  // fetched response object (kept so re-expanding / another card with the
+  // same name never refetches). DELIBERATELY separate from the KAMIS ▼%
+  // signal: the price here is a NAVER 쇼핑 lowest listing (often multipack).
+  var onlinePriceCache = {};
+
   function formatDate(isoDate) {
     // isoDate "YYYY-MM-DD" from server (already KST). Build local Date safely.
     var parts = (isoDate || "").split("-");
@@ -213,14 +221,156 @@
     });
     detail.appendChild(links);
 
+    // ----- online lowest price (NAVER 쇼핑) — lazy, distinct basis -----
+    // Deliberately BELOW the KAMIS reasons/baseline and inside the expand
+    // so it reads as a separate, different-unit data point (often a
+    // multipack), never as part of the always-visible KAMIS ▼% signal.
+    var oLabel = document.createElement("p");
+    oLabel.className = "detail__label";
+    oLabel.textContent = "온라인 최저가";
+    detail.appendChild(oLabel);
+
+    var onlineBox = document.createElement("div");
+    onlineBox.className = "online-box";
+    var onlineLoading = document.createElement("div");
+    onlineLoading.className = "online-loading";
+    onlineLoading.textContent = "네이버 쇼핑 최저가 확인하기";
+    onlineBox.appendChild(onlineLoading);
+    detail.appendChild(onlineBox);
+
     li.appendChild(head);
     li.appendChild(detail);
 
     head.addEventListener("click", function () {
       li.classList.toggle("is-open");
+      // Lazy-fetch the online price the FIRST time this card opens (and
+      // only on open). Cached by name so re-expanding — or another card
+      // with the same ingredient — never refetches / re-hits the quota.
+      if (li.classList.contains("is-open")) {
+        loadOnlinePrice(item.name, onlineBox);
+      }
     });
 
     return li;
+  }
+
+  // NAVER 쇼핑 search deep-link for a name (used as the always-available
+  // fallback link when the per-ingredient fetch has no usable response).
+  function naverShopSearchUrl(name) {
+    return (
+      "https://search.shopping.naver.com/search/all?query=" +
+      encodeURIComponent(name)
+    );
+  }
+
+  // Render a successful /api/online-price response into `box`. The whole
+  // block is a link into NAVER 쇼핑 (data.url, else data.more_url). NO ▼% /
+  // no "vs 기준가" is shown — the raw listing title is surfaced so a
+  // multipack/대용량 unit is transparent (honest, separate from KAMIS).
+  function renderOnlinePrice(box, data) {
+    box.innerHTML = "";
+
+    var hasPrice = data.price !== null && data.price !== undefined;
+    var href = data.url || data.more_url || "#";
+
+    var a = document.createElement("a");
+    a.className = "online-link";
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener";
+
+    var badge = document.createElement("span");
+    badge.className = "online-badge";
+    badge.textContent = "네이버 쇼핑 최저가";
+    a.appendChild(badge);
+
+    var price = document.createElement("div");
+    price.className = "online-price";
+    price.textContent = hasPrice
+      ? "약 " + Number(data.price).toLocaleString("ko-KR") + "원~"
+      : "가격 확인";
+    a.appendChild(price);
+
+    if (data.listing) {
+      var listing = document.createElement("div");
+      listing.className = "online-listing";
+      listing.textContent = data.listing;
+      a.appendChild(listing);
+    }
+
+    if (data.mall) {
+      var mall = document.createElement("div");
+      mall.className = "online-mall";
+      mall.textContent = data.mall;
+      a.appendChild(mall);
+    }
+
+    if (!hasPrice) {
+      var see = document.createElement("div");
+      see.className = "online-mall";
+      see.textContent = "네이버 쇼핑에서 보기";
+      a.appendChild(see);
+    }
+
+    box.appendChild(a);
+
+    var caption = document.createElement("div");
+    caption.className = "online-caption";
+    caption.textContent =
+      "당일배송 보장 아님 · 묶음/대용량일 수 있어 기준가와 단위가 달라요";
+    box.appendChild(caption);
+  }
+
+  // Replace the placeholder with a single NAVER 쇼핑 search deep-link —
+  // the graceful fallback when the fetch fails or returns nothing usable.
+  function renderOnlineFallback(box, name, moreUrl) {
+    box.innerHTML = "";
+    var btn = document.createElement("a");
+    btn.className = "recipe-btn";
+    btn.href = moreUrl || naverShopSearchUrl(name);
+    btn.target = "_blank";
+    btn.rel = "noopener";
+    btn.textContent = "네이버 쇼핑에서 검색";
+    box.appendChild(btn);
+  }
+
+  // Lazy fetch the online price for `name` and render into `box`. Cached by
+  // name (re-expand / same-ingredient card never refetches). Defensive like
+  // the combo lazy-fetch: never throws, never console.error — any failure
+  // degrades to a single NAVER 쇼핑 search deep-link.
+  function loadOnlinePrice(name, box) {
+    var cached = onlinePriceCache[name];
+    if (cached === "loading") return;
+    if (cached) {
+      if (cached.status === "ok") {
+        renderOnlinePrice(box, cached);
+      } else {
+        renderOnlineFallback(box, name, cached.more_url);
+      }
+      return;
+    }
+
+    onlinePriceCache[name] = "loading";
+    fetch("/api/online-price?name=" + encodeURIComponent(name))
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        onlinePriceCache[name] = data;
+        if (!box || !box.isConnected) return;
+        if (data && data.status === "ok") {
+          renderOnlinePrice(box, data);
+        } else {
+          renderOnlineFallback(box, name, data && data.more_url);
+        }
+      })
+      .catch(function () {
+        // Don't pin a failure in the cache — a later expand may succeed.
+        onlinePriceCache[name] = null;
+        if (!box || !box.isConnected) return;
+        renderOnlineFallback(box, name, null);
+      });
   }
 
   function renderActionbar() {

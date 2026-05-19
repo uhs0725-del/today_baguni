@@ -22,6 +22,7 @@ from pydantic import BaseModel
 
 from .beverages import gather_beverages
 from .kamis import get_today_prices
+from .online_price import fetch_online_price
 from .recipes import gather_recipe_results
 from .ranking import (
     STAPLE_INGREDIENTS,
@@ -121,6 +122,17 @@ class BeverageItem(BaseModel):
 
 class BeveragesResponse(BaseModel):
     items: list[BeverageItem]
+    source: Literal["naver-shopping"]
+
+
+class OnlinePriceResponse(BaseModel):
+    name: str
+    price: Optional[int] = None
+    listing: str = ""
+    url: str = ""
+    mall: str = ""
+    status: Literal["ok", "fallback"]
+    more_url: str
     source: Literal["naver-shopping"]
 
 
@@ -272,6 +284,38 @@ def get_beverages() -> BeveragesResponse:
     KAMIS ▼% signal; the UI labels them accordingly. The in-module ~12h
     cache keeps the NAVER quota safe."""
     return BeveragesResponse(**gather_beverages())
+
+
+@app.get("/api/online-price", response_model=OnlinePriceResponse)
+def get_online_price(name: str = "") -> OnlinePriceResponse:
+    """Per-ingredient online lowest price via the NAVER 쇼핑 검색 API,
+    fetched LAZILY by the frontend only when a card is expanded. NEVER
+    raises / always 200: an empty/unresolved name, missing API keys, or any
+    upstream failure just yields status "fallback" (price None, more_url
+    still set). This is the NAVER 쇼핑 lowest-listing (often multipack) and
+    is DELIBERATELY separate from the KAMIS ▼% signal — no ▼% / no baseline
+    is derived; the raw listing title is exposed so the unit is transparent.
+    The in-module ~12h cache keeps the NAVER quota safe.
+
+    The ingredient is resolved via the existing `find_ingredient` so the
+    NAVER query is its `search_keyword` (e.g. display "돼지 삼겹살" →
+    query "삼겹살"). If it can't be resolved, fall back on the raw name."""
+    raw = name.strip()
+    if not raw:
+        item = fetch_online_price("", "")
+        return OnlinePriceResponse(**item, source="naver-shopping")
+
+    meta = find_ingredient(raw)
+    if meta is None:
+        # Unknown ingredient — still 200 with a usable NAVER deep-link
+        # built from the raw name (query == display == raw name).
+        item = fetch_online_price(raw, raw)
+        return OnlinePriceResponse(**item, source="naver-shopping")
+
+    display_name = meta.name
+    query = meta.search_keyword
+    item = fetch_online_price(display_name, query)
+    return OnlinePriceResponse(**item, source="naver-shopping")
 
 
 @app.get("/")

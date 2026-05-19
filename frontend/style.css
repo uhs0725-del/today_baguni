@@ -973,6 +973,79 @@ body.has-actionbar .app {
   color: var(--ink-soft);
 }
 
+/* ---------- online lowest price (NAVER 쇼핑) inside an expanded card ------
+   Same Naver-green family as .bev-* so it reads as "online, different
+   basis" — unmistakably distinct from the KAMIS .pill / .price-tag (which
+   are the ▼% / 기준가 signal). Compact because it lives in the card
+   detail, not as its own full card. */
+.online-box {
+  margin-top: 6px;
+}
+
+.online-loading {
+  font-size: 13px;
+  color: #0b5c39;
+  background: #e6f6ed;
+  border: 1px solid #b9e3cb;
+  padding: 11px 14px;
+  border-radius: 12px;
+}
+
+.online-link {
+  display: block;
+  text-decoration: none;
+  color: var(--ink);
+  background: #f3fbf6;
+  border: 1px solid #cdebd9;
+  border-left: 4px solid #06a35a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: opacity 0.15s;
+}
+
+.online-link:active {
+  opacity: 0.85;
+}
+
+.online-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: #06a35a;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.online-price {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0b5c39;
+}
+
+.online-listing {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+.online-mall {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.online-caption {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
 /* ---------- footer ---------- */
 .footer {
   margin-top: 28px;
