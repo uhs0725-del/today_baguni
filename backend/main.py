@@ -22,7 +22,7 @@ from pydantic import BaseModel
 
 from .beverages import gather_beverages
 from .kamis import get_today_prices
-from .online_price import fetch_online_price
+from .online_price import build_naver_query, fetch_online_price
 from .recipes import gather_recipe_results
 from .ranking import (
     STAPLE_INGREDIENTS,
@@ -312,8 +312,11 @@ def get_online_price(name: str = "") -> OnlinePriceResponse:
         item = fetch_online_price(raw, raw)
         return OnlinePriceResponse(**item, source="naver-shopping")
 
+    # NOTE: NOT meta.search_keyword — that is RECIPE-oriented (바지락 →
+    # "바지락칼국수") and was the root cause of the processed-product
+    # mismatch. build_naver_query uses the raw name (+ category / override).
     display_name = meta.name
-    query = meta.search_keyword
+    query = build_naver_query(meta.name, meta.category)
     item = fetch_online_price(display_name, query)
     return OnlinePriceResponse(**item, source="naver-shopping")
 

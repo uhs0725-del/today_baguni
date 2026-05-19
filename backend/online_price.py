@@ -197,6 +197,49 @@ def _fallback_item(display_name: str) -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Shopping-query builder. ROOT-CAUSE FIX (2026-05-19): the per-ingredient
+# `search_keyword` in ingredients.json is RECIPE-oriented (바지락 →
+# "바지락칼국수", 계란 → "계란요리", 상추 → "상추겉절이") — great for the
+# recipe feature, but as a NAVER 쇼핑 query it literally searches the DISH,
+# which is why 바지락 returned 바지락칼국수. For a price lookup we instead
+# use the raw ingredient NAME (+ a coarse category word to bias NAVER sim
+# toward the fresh-grocery aisle), with a tiny override for names that are
+# still ambiguous. This is the input-side fix; the junk/processed reject
+# filters stay exactly as-is. DO NOT route search_keyword here again.
+# ---------------------------------------------------------------------------
+
+# ingredients.json `category` → a true, low-risk enrichment word. 식량작물
+# (콩·쌀·팥…) and 축산물 (고기·계란) are intentionally NOT enriched — a
+# category word there is noise (계란 is handled by the override below).
+_CATEGORY_ENRICH = {
+    "수산물": "수산물",
+    "채소류": "채소",
+    "과일류": "과일",
+}
+
+# Highest priority: names whose raw form is STILL processed-dominated on
+# NAVER. Keep this list tiny and observation-driven (extend only after a
+# live check). The value entirely replaces the query.
+_QUERY_OVERRIDE = {
+    "계란": "달걀 30구",
+    "바지락": "생바지락",
+}
+
+
+def build_naver_query(name: str, category: str) -> str:
+    """NAVER 쇼핑 query for a price lookup. Override → else raw name (+
+    category enrich). NEVER the recipe `search_keyword`. Pure/total —
+    empty name yields ""(caller already handles the empty case)."""
+    nm = (name or "").strip()
+    if not nm:
+        return ""
+    if nm in _QUERY_OVERRIDE:
+        return _QUERY_OVERRIDE[nm]
+    extra = _CATEGORY_ENRICH.get((category or "").strip())
+    return f"{nm} {extra}" if extra else nm
+
+
 def fetch_online_price(display_name: str, query: str) -> dict:
     """Online lowest-listing price for ONE ingredient via NAVER 쇼핑.
 
