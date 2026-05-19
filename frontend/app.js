@@ -238,18 +238,38 @@
     onlineBox.appendChild(onlineLoading);
     detail.appendChild(onlineBox);
 
+    // Subtle "there's more inside" affordance. Wording is GENERIC ("자세히")
+    // on purpose: the expand also holds solid content (추천 이유·보관 팁·
+    // 레시피), while the online price is noisy — so we hint at detail in
+    // general, never promise "온라인 최저가" up front. Hidden once open.
+    var moreHint = document.createElement("div");
+    moreHint.className = "card__more";
+    moreHint.setAttribute("aria-hidden", "true");
+    var moreLabel = document.createElement("span");
+    moreLabel.className = "card__more-label";
+    moreLabel.textContent = "자세히";
+    var moreChev = document.createElement("span");
+    moreChev.className = "card__more-chev";
+    moreChev.textContent = "▾";
+    moreHint.appendChild(moreLabel);
+    moreHint.appendChild(moreChev);
+
     li.appendChild(head);
+    li.appendChild(moreHint);
     li.appendChild(detail);
 
-    head.addEventListener("click", function () {
+    // Toggle open/closed. Lazy-fetch the online price the FIRST time this
+    // card opens (and only on open) — cached by name so re-expanding (or
+    // another card with the same ingredient) never refetches / re-hits the
+    // quota. Shared by the head and the "자세히" affordance.
+    function toggleOpen() {
       li.classList.toggle("is-open");
-      // Lazy-fetch the online price the FIRST time this card opens (and
-      // only on open). Cached by name so re-expanding — or another card
-      // with the same ingredient — never refetches / re-hits the quota.
       if (li.classList.contains("is-open")) {
         loadOnlinePrice(item.name, onlineBox);
       }
-    });
+    }
+    head.addEventListener("click", toggleOpen);
+    moreHint.addEventListener("click", toggleOpen);
 
     return li;
   }

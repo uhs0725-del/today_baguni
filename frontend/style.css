@@ -727,6 +727,37 @@ body.has-actionbar .app {
   padding-bottom: 12px;
 }
 
+/* Collapsed-state "탭하면 더 있다" affordance. Subtle, full-width, shares
+   the card's tap-to-expand. Hidden once the card is open. */
+.card__more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 12px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: var(--card-bg);
+  border-top: 1px dashed var(--line);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.card__more:active {
+  color: var(--ink);
+}
+
+.card__more-chev {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.card.is-open .card__more {
+  display: none;
+}
+
 @keyframes fade {
   from {
     opacity: 0;

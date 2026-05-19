@@ -46,8 +46,47 @@ import httpx
 # upstream can't stall the API response.
 _HTTP_TIMEOUT = 6.0
 
-# How many listings to pull per query (we keep the FIRST = sim-ranked).
-_DISPLAY = 5
+# How many listings to pull per query (ONE API call regardless). We pull a
+# few so the light relevance filter has candidates; we still PREFER the
+# highest sim-ranked one that isn't obvious junk.
+_DISPLAY = 10
+
+# Listings that are clearly NOT a 1인가구-relevant retail item — bulk /
+# foodservice / gift / seed-or-grow / wholesale. HIGH-PRECISION Korean
+# tokens only (substring on the de-tagged title); the goal is to drop the
+# worst offenders, NOT perfect matching (impossible — NAVER 쇼핑 has no
+# unit/identity normalization; the caption still warns about 묶음/대용량).
+_JUNK_TOKENS = (
+    "선물세트", "선물 세트", "업소용", "영업용", "외식", "급식",
+    "도매", "도매가", "벌크", "박스판매", "한박스", "한 박스",
+    "모종", "씨앗", "종자", "모판", "재배", "사료", "비료",
+    "중도매", "경매", "단체", "대량",
+)
+
+# Absurd-quantity heuristic: a number ≥ 5 right before "kg" (e.g. "10kg",
+# "5 kg", "20KG"). 1인가구 consumer packs are almost always < 5kg, so this
+# strips the "양파 10kg" / "통삼겹살 4kg 박스" style listings when a smaller
+# one exists. Guarded; never raises.
+_BULK_KG_RE = re.compile(r"(\d+(?:\.\d+)?)\s*kg", re.IGNORECASE)
+
+
+def _looks_junk(title: str) -> bool:
+    """True if the title screams bulk/foodservice/gift/seed/wholesale, or
+    quotes a ≥5kg quantity. Conservative by design — false negatives are
+    fine (caption still warns), false positives lose a usable listing."""
+    if not title:
+        return True
+    low = title.lower()
+    for tok in _JUNK_TOKENS:
+        if tok.lower() in low:
+            return True
+    try:
+        for m in _BULK_KG_RE.finditer(title):
+            if float(m.group(1)) >= 5:
+                return True
+    except (ValueError, TypeError):
+        pass
+    return False
 
 # ---------------------------------------------------------------------------
 # Server-side cache: module-level dict keyed by the naver query string. TTL
@@ -154,8 +193,20 @@ def fetch_online_price(display_name: str, query: str) -> dict:
         data = resp.json()
         listings = data.get("items") or []
         if listings:
-            top = listings[0]
-            title = _strip_tags(top.get("title", ""))
+            # Prefer the highest sim-ranked listing that isn't obvious
+            # junk/bulk; if EVERY candidate looks junky, keep sim #1 — never
+            # degrade to no-data (the caption still warns 묶음/대용량).
+            top = None
+            title = ""
+            for cand in listings:
+                cand_title = _strip_tags(cand.get("title", ""))
+                if cand_title and not _looks_junk(cand_title):
+                    top = cand
+                    title = cand_title
+                    break
+            if top is None:
+                top = listings[0]
+                title = _strip_tags(top.get("title", ""))
             link = top.get("link") or ""
             mall = top.get("mallName") or ""
             price: Optional[int] = None
