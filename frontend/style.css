@@ -1046,6 +1046,24 @@ body.has-actionbar .app {
   color: var(--ink-faint);
 }
 
+.online-compare {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #0b5c39;
+  background: #e6f6ed;
+  border: 1px solid #b9e3cb;
+  border-radius: 10px;
+  padding: 9px 12px;
+  text-align: center;
+}
+
+.online-compare:active {
+  opacity: 0.85;
+}
+
 /* ---------- footer ---------- */
 .footer {
   margin-top: 28px;

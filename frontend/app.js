@@ -314,10 +314,22 @@
 
     box.appendChild(a);
 
+    // Explicit NAVER 가격비교 (all-sellers) deep-link — a sibling of the
+    // representative-listing block (NOT nested: avoids invalid nested <a>).
+    // This is where 쿠팡 등 다른 판매처 prices surface (NAVER aggregates
+    // them); the user picks their own size/seller there.
+    var cmp = document.createElement("a");
+    cmp.className = "online-compare";
+    cmp.href = data.more_url || naverShopSearchUrl(data.name || "");
+    cmp.target = "_blank";
+    cmp.rel = "noopener";
+    cmp.textContent = "네이버 가격비교 · 쿠팡 등 전체 판매처 보기";
+    box.appendChild(cmp);
+
     var caption = document.createElement("div");
     caption.className = "online-caption";
     caption.textContent =
-      "당일배송 보장 아님 · 묶음/대용량일 수 있어 기준가와 단위가 달라요";
+      "네이버쇼핑 온라인 최저가 · 묶음/대용량일 수 있어 KAMIS 기준가와 단위가 달라요";
     box.appendChild(caption);
   }
 
@@ -326,11 +338,11 @@
   function renderOnlineFallback(box, name, moreUrl) {
     box.innerHTML = "";
     var btn = document.createElement("a");
-    btn.className = "recipe-btn";
+    btn.className = "online-compare";
     btn.href = moreUrl || naverShopSearchUrl(name);
     btn.target = "_blank";
     btn.rel = "noopener";
-    btn.textContent = "네이버 쇼핑에서 검색";
+    btn.textContent = "네이버 가격비교 · 전체 판매처 보기";
     box.appendChild(btn);
   }
 
