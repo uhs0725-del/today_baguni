@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from .beverages import gather_beverages
 from .kamis import get_today_prices
 from .recipes import gather_recipe_results
 from .ranking import (
@@ -106,6 +107,21 @@ class RecipeResultsSource(BaseModel):
 class RecipeResultsResponse(BaseModel):
     query: str
     sources: list[RecipeResultsSource]
+
+
+class BeverageItem(BaseModel):
+    name: str
+    price: Optional[int] = None
+    listing: str = ""
+    url: str = ""
+    mall: str = ""
+    status: Literal["ok", "fallback"]
+    more_url: str
+
+
+class BeveragesResponse(BaseModel):
+    items: list[BeverageItem]
+    source: Literal["naver-shopping"]
 
 
 @app.get("/api/recommendations", response_model=RecommendationsResponse)
@@ -245,6 +261,17 @@ def get_recipe_results(items: str = "") -> RecipeResultsResponse:
     ]
     data = gather_recipe_results(query_terms, main_terms=main_terms)
     return RecipeResultsResponse(**data)
+
+
+@app.get("/api/beverages", response_model=BeveragesResponse)
+def get_beverages() -> BeveragesResponse:
+    """Curated beverage list priced via the NAVER 쇼핑 검색 API. NEVER
+    raises / always 200: missing API keys or any per-item upstream failure
+    just yields that item as status "fallback" (price None, more_url still
+    set). Prices are NAVER 쇼핑 lowest-listing (often multipack) — NOT the
+    KAMIS ▼% signal; the UI labels them accordingly. The in-module ~12h
+    cache keeps the NAVER quota safe."""
+    return BeveragesResponse(**gather_beverages())
 
 
 @app.get("/")

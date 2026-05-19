@@ -342,5 +342,293 @@
     "storage_tip": "냉동 상태 보관, 탕·찌개용으로 1인엔 반 마리도 충분",
     "season_months": [12, 1, 2],
     "search_keyword": "동태"
+  },
+  {
+    "name": "상추",
+    "category": "채소류",
+    "solo_fit": 2,
+    "storage_tip": "물기 털어 키친타월 깐 통에 냉장, 바로 먹을 만큼만",
+    "season_months": [4, 5, 6, 9, 10],
+    "search_keyword": "상추겉절이"
+  },
+  {
+    "name": "깻잎",
+    "category": "채소류",
+    "solo_fit": 2,
+    "storage_tip": "젖은 키친타월에 싸 냉장, 한 봉은 1인엔 많으니 빨리 소비",
+    "season_months": [6, 7, 8, 9],
+    "search_keyword": "깻잎무침"
+  },
+  {
+    "name": "미나리",
+    "category": "채소류",
+    "solo_fit": 2,
+    "storage_tip": "물에 담가 냉장, 잎 무르기 전 2~3일 내 소진",
+    "season_months": [3, 4, 5],
+    "search_keyword": "미나리무침"
+  },
+  {
+    "name": "방울토마토",
+    "category": "채소류",
+    "solo_fit": 4,
+    "storage_tip": "꼭지 떼고 씻지 말고 냉장, 먹기 직전 세척",
+    "season_months": [6, 7, 8, 9],
+    "search_keyword": "방울토마토"
+  },
+  {
+    "name": "브로콜리",
+    "category": "채소류",
+    "solo_fit": 3,
+    "storage_tip": "데쳐서 한 끼씩 소분 냉동하면 오래, 생물은 4~5일 내",
+    "season_months": [11, 12, 1, 2, 3],
+    "search_keyword": "브로콜리볶음"
+  },
+  {
+    "name": "파프리카",
+    "category": "채소류",
+    "solo_fit": 3,
+    "storage_tip": "물기 닦아 비닐에 싸 냉장, 한 개씩 천천히 소비",
+    "season_months": [],
+    "search_keyword": "파프리카볶음"
+  },
+  {
+    "name": "피망",
+    "category": "채소류",
+    "solo_fit": 3,
+    "storage_tip": "키친타월에 싸서 냉장 채소칸, 일주일 정도 버팀",
+    "season_months": [6, 7, 8, 9, 10],
+    "search_keyword": "피망볶음"
+  },
+  {
+    "name": "풋고추",
+    "category": "채소류",
+    "solo_fit": 3,
+    "storage_tip": "물기 닦아 키친타월과 함께 밀폐 냉장, 한 줌씩 소비",
+    "season_months": [6, 7, 8, 9],
+    "search_keyword": "풋고추된장무침"
+  },
+  {
+    "name": "생강",
+    "category": "채소류",
+    "solo_fit": 5,
+    "storage_tip": "다져서 냉동하거나 편 썰어 소분, 조금씩 오래 씀",
+    "season_months": [10, 11, 12],
+    "search_keyword": "생강"
+  },
+  {
+    "name": "열무",
+    "category": "채소류",
+    "solo_fit": 2,
+    "storage_tip": "한 단은 1인엔 과함, 바로 김치·물김치로 담가 소진",
+    "season_months": [5, 6, 7, 8],
+    "search_keyword": "열무김치"
+  },
+  {
+    "name": "얼갈이배추",
+    "category": "채소류",
+    "solo_fit": 2,
+    "storage_tip": "물러지기 쉬워 사자마자 겉절이·국으로 빨리 소비",
+    "season_months": [3, 4, 5, 10, 11],
+    "search_keyword": "얼갈이배추된장국"
+  },
+  {
+    "name": "알배기배추",
+    "category": "채소류",
+    "solo_fit": 3,
+    "storage_tip": "랩으로 단면 밀착해 냉장, 작아서 1인에 적당",
+    "season_months": [11, 12, 1, 2],
+    "search_keyword": "알배기배추겉절이"
+  },
+  {
+    "name": "새송이버섯",
+    "category": "채소류",
+    "solo_fit": 4,
+    "storage_tip": "씻지 말고 키친타월 깐 통에 냉장, 일주일 이상 버팀",
+    "season_months": [],
+    "search_keyword": "새송이버섯볶음"
+  },
+  {
+    "name": "팽이버섯",
+    "category": "채소류",
+    "solo_fit": 3,
+    "storage_tip": "봉지째 냉장하고 개봉 후 3~4일 내 소비",
+    "season_months": [],
+    "search_keyword": "팽이버섯요리"
+  },
+  {
+    "name": "배",
+    "category": "과일류",
+    "solo_fit": 3,
+    "storage_tip": "개별 포장해 냉장 채소칸, 무르기 전 빨리 먹기",
+    "season_months": [9, 10, 11],
+    "search_keyword": "배"
+  },
+  {
+    "name": "오렌지",
+    "category": "과일류",
+    "solo_fit": 4,
+    "storage_tip": "통풍 바구니에 펼쳐 실온, 오래 두려면 냉장",
+    "season_months": [12, 1, 2, 3],
+    "search_keyword": "오렌지"
+  },
+  {
+    "name": "아보카도",
+    "category": "과일류",
+    "solo_fit": 4,
+    "storage_tip": "단단하면 실온서 후숙, 말랑해지면 냉장하고 반은 씨 붙여 보관",
+    "season_months": [],
+    "search_keyword": "아보카도"
+  },
+  {
+    "name": "레몬",
+    "category": "과일류",
+    "solo_fit": 4,
+    "storage_tip": "통째 비닐에 싸 냉장, 자른 건 단면 랩핑해 며칠 내 소비",
+    "season_months": [],
+    "search_keyword": "레몬청"
+  },
+  {
+    "name": "망고",
+    "category": "과일류",
+    "solo_fit": 3,
+    "storage_tip": "단단하면 실온 후숙, 익으면 냉장하고 2~3일 내 소비",
+    "season_months": [5, 6, 7],
+    "search_keyword": "망고"
+  },
+  {
+    "name": "파인애플",
+    "category": "과일류",
+    "solo_fit": 2,
+    "storage_tip": "통째론 1인엔 큼, 잘라 밀폐 냉장하고 며칠 내 소진",
+    "season_months": [],
+    "search_keyword": "파인애플"
+  },
+  {
+    "name": "딸기",
+    "category": "과일류",
+    "solo_fit": 2,
+    "storage_tip": "씻지 말고 키친타월 깐 통에 냉장, 1~2일 내 먹기",
+    "season_months": [1, 2, 3, 4],
+    "search_keyword": "딸기"
+  },
+  {
+    "name": "수박",
+    "category": "과일류",
+    "solo_fit": 2,
+    "storage_tip": "통째론 1인엔 부담, 잘라 랩핑 냉장하고 빨리 소비",
+    "season_months": [6, 7, 8],
+    "search_keyword": "수박"
+  },
+  {
+    "name": "참외",
+    "category": "과일류",
+    "solo_fit": 3,
+    "storage_tip": "씻지 말고 냉장 채소칸, 4~5일 내 소비",
+    "season_months": [5, 6, 7, 8],
+    "search_keyword": "참외"
+  },
+  {
+    "name": "멜론",
+    "category": "과일류",
+    "solo_fit": 2,
+    "storage_tip": "단단하면 실온 후숙, 익으면 잘라 밀폐 냉장 후 빨리 소비",
+    "season_months": [6, 7, 8],
+    "search_keyword": "멜론"
+  },
+  {
+    "name": "콩",
+    "category": "식량작물",
+    "solo_fit": 5,
+    "storage_tip": "밀폐해 냉장·냉동하면 벌레 없이 오래, 조금씩 불려 씀",
+    "season_months": [],
+    "search_keyword": "콩조림"
+  },
+  {
+    "name": "팥",
+    "category": "식량작물",
+    "solo_fit": 5,
+    "storage_tip": "밀폐 냉장 보관, 한 줌씩 삶아 죽·앙금에 활용",
+    "season_months": [],
+    "search_keyword": "팥죽"
+  },
+  {
+    "name": "찹쌀",
+    "category": "식량작물",
+    "solo_fit": 5,
+    "storage_tip": "페트병에 담아 냉장하면 산패·벌레 걱정 적음",
+    "season_months": [],
+    "search_keyword": "찹쌀밥"
+  },
+  {
+    "name": "땅콩",
+    "category": "식량작물",
+    "solo_fit": 5,
+    "storage_tip": "밀폐해 냉장·냉동, 눅눅함 없이 오래 두고 조금씩 씀",
+    "season_months": [9, 10, 11],
+    "search_keyword": "땅콩조림"
+  },
+  {
+    "name": "바지락",
+    "category": "수산물",
+    "solo_fit": 3,
+    "storage_tip": "소금물에 해감 후 바로 조리, 남으면 삶아 살만 냉동",
+    "season_months": [3, 4, 5],
+    "search_keyword": "바지락칼국수"
+  },
+  {
+    "name": "조기",
+    "category": "수산물",
+    "solo_fit": 3,
+    "storage_tip": "1마리씩 진공·냉동, 구이·찌개용으로 꺼내 씀",
+    "season_months": [3, 4, 5, 9, 10],
+    "search_keyword": "조기구이"
+  },
+  {
+    "name": "삼치",
+    "category": "수산물",
+    "solo_fit": 2,
+    "storage_tip": "토막 내 1회분씩 냉동, 생물은 사고 바로 굽기",
+    "season_months": [10, 11, 12, 1],
+    "search_keyword": "삼치구이"
+  },
+  {
+    "name": "꽁치",
+    "category": "수산물",
+    "solo_fit": 3,
+    "storage_tip": "1마리씩 냉동, 통조림은 실온 장기보관 가능",
+    "season_months": [9, 10, 11],
+    "search_keyword": "꽁치조림"
+  },
+  {
+    "name": "북어",
+    "category": "수산물",
+    "solo_fit": 5,
+    "storage_tip": "건어물이라 밀폐 냉동하면 오래, 국·무침 다용도",
+    "season_months": [],
+    "search_keyword": "북어국"
+  },
+  {
+    "name": "홍합",
+    "category": "수산물",
+    "solo_fit": 3,
+    "storage_tip": "껍데기 닦아 바로 조리, 살만 발라 냉동도 가능",
+    "season_months": [11, 12, 1, 2],
+    "search_keyword": "홍합탕"
+  },
+  {
+    "name": "마른오징어",
+    "category": "수산물",
+    "solo_fit": 5,
+    "storage_tip": "밀폐해 냉동하면 눅눅함 없이 오래, 조금씩 구워 씀",
+    "season_months": [],
+    "search_keyword": "마른오징어무침"
+  },
+  {
+    "name": "우유",
+    "category": "축산물",
+    "solo_fit": 4,
+    "storage_tip": "냉장 안쪽에 세워 보관, 1인은 작은 팩이 안 버려짐",
+    "season_months": [],
+    "search_keyword": "우유"
   }
 ]

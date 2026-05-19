@@ -44,6 +44,12 @@
   // Computed globally from allItems (NOT affected by the active filter).
   var top3Names = [];
 
+  // 음료 tab: prices come from NAVER 쇼핑 (NOT KAMIS), so this tab renders a
+  // DISTINCT list and has NO ▼%/제철/담기/expand. Fetched once per page load
+  // and cached here; null = not fetched yet, [] = fetched-but-empty.
+  var bevItems = null;
+  var bevLoading = false;
+
   function formatDate(isoDate) {
     // isoDate "YYYY-MM-DD" from server (already KST). Build local Date safely.
     var parts = (isoDate || "").split("-");
@@ -628,6 +634,122 @@
     els.recmenu.hidden = false;
   }
 
+  // ---------------------------------------------------------------------
+  // 음료 (NAVER 쇼핑) — a deliberately DISTINCT card so users never confuse
+  // a NAVER lowest-listing price (often a multipack) with the KAMIS ▼%
+  // signal. No 담기, no ▼% pill, no 제철/solo badge, no expand. The whole
+  // card is a link into NAVER 쇼핑 (item.url, else item.more_url).
+  // ---------------------------------------------------------------------
+  function buildBevCard(item) {
+    var a = document.createElement("a");
+    a.className = "bev-card";
+    a.href = item.url || item.more_url || "#";
+    a.target = "_blank";
+    a.rel = "noopener";
+
+    var name = document.createElement("div");
+    name.className = "bev-name";
+    name.textContent = item.name;
+    a.appendChild(name);
+
+    var badge = document.createElement("span");
+    badge.className = "bev-badge";
+    badge.textContent = "네이버 쇼핑 최저가";
+    a.appendChild(badge);
+
+    var price = document.createElement("div");
+    price.className = "bev-price";
+    if (item.price === null || item.price === undefined) {
+      price.textContent = "가격 확인";
+    } else {
+      price.textContent =
+        "약 " + Number(item.price).toLocaleString("ko-KR") + "원~";
+    }
+    a.appendChild(price);
+
+    if (item.listing) {
+      var listing = document.createElement("div");
+      listing.className = "bev-listing";
+      listing.textContent = item.listing;
+      a.appendChild(listing);
+    }
+
+    if (item.mall) {
+      var mall = document.createElement("div");
+      mall.className = "bev-mall";
+      mall.textContent = item.mall;
+      a.appendChild(mall);
+    }
+
+    return a;
+  }
+
+  // Render the cached beverage list into #cards (a one-line notice bar on
+  // top). Distinct from the KAMIS card path. `state` is "loading" | "list".
+  function renderBeverages(state) {
+    els.cards.innerHTML = "";
+    els.feedEmpty.hidden = true;
+
+    var notice = document.createElement("li");
+    notice.className = "bev-notice";
+    notice.textContent =
+      "음료는 네이버 쇼핑 최저가 기준이에요 — 채소·고기 시세(▼%)와 기준이 달라요.";
+    els.cards.appendChild(notice);
+
+    if (state === "loading") {
+      var loadingLi = document.createElement("li");
+      loadingLi.className = "bev-loading";
+      loadingLi.textContent = "음료 가격 불러오는 중…";
+      els.cards.appendChild(loadingLi);
+      return;
+    }
+
+    if (!bevItems || bevItems.length === 0) {
+      var emptyLi = document.createElement("li");
+      emptyLi.className = "bev-loading";
+      emptyLi.textContent = "음료 정보를 불러오지 못했어요.";
+      els.cards.appendChild(emptyLi);
+      return;
+    }
+
+    bevItems.forEach(function (it) {
+      els.cards.appendChild(buildBevCard(it));
+    });
+  }
+
+  // Show the 음료 tab: hide the produce-only UI (recmenu/sorts), then show
+  // the beverage list. Fetch /api/beverages once per load (cache in
+  // bevItems); a brief loading state shows in the feed meanwhile. Any
+  // failure → an empty-notice list (the notice bar always renders).
+  function showBeveragesTab() {
+    els.recmenu.hidden = true;
+    els.sorts.hidden = true;
+
+    if (bevItems !== null) {
+      renderBeverages("list");
+      return;
+    }
+    renderBeverages("loading");
+    if (bevLoading) return;
+    bevLoading = true;
+    fetch("/api/beverages")
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        bevItems = (data && data.items) || [];
+      })
+      .catch(function () {
+        bevItems = [];
+      })
+      .then(function () {
+        bevLoading = false;
+        // Only repaint if the user is still on the 음료 tab.
+        if (activeGroup === "음료") renderBeverages("list");
+      });
+  }
+
   // Paint the cards for the active group. The fetched list is preserved — we
   // only filter+sort the view (no API re-call). Selection is by name, so it
   // persists across filter/sort changes even for hidden items.
@@ -678,6 +800,18 @@
       chip.classList.toggle("is-active", on);
       chip.setAttribute("aria-pressed", on ? "true" : "false");
     });
+    if (group === "음료") {
+      // Beverages = NAVER 쇼핑, NOT KAMIS: hide the produce-only UI and
+      // render the distinct beverage list. (showBeveragesTab hides
+      // recmenu/sorts.)
+      showBeveragesTab();
+      return;
+    }
+    // Any other chip → restore the produce UI exactly as before: sorts
+    // visible again, recmenu re-shown iff it has picks (renderRecmenu is a
+    // pure repaint from selected/top3Names — it does NOT touch selection).
+    els.sorts.hidden = false;
+    renderRecmenu();
     renderCards();
   }
 
