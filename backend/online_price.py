@@ -200,13 +200,16 @@ def _fallback_item(display_name: str) -> dict:
 def fetch_online_price(display_name: str, query: str) -> dict:
     """Online lowest-listing price for ONE ingredient via NAVER 쇼핑.
 
-    The representative item is the highest sim-ranked listing that passes
-    BOTH the junk/bulk filter AND the processed/wrong-category filter. If
-    none qualifies — or any problem occurs (missing keys, network, HTTP,
-    parse, empty) — we return the link-only fallback rather than fabricate a
-    guess (trust > coverage; user's explicit 2026-05-19 choice). Cached per
-    query string (~12h) so a lazy expand never re-hits the NAVER quota for
-    the same ingredient. Never raises.
+    Two-pass pick: (1) the highest sim-ranked listing that is non-junk AND
+    non-processed; failing that (2) a RIGHT product even if bulky/large-
+    unit (the UI caption already says 묶음/대용량). A WRONG product
+    (processed/wrong-category, e.g. 바지락칼국수) is hard-rejected in both
+    passes; if only wrong products exist — or any problem occurs (missing
+    keys, network, HTTP, parse, empty) — we return the link-only fallback
+    rather than fabricate a guess (user's explicit 2026-05-19 decision:
+    wrong product is worse than no price, but right-product-bulky is fine
+    with the caption). Cached per query string (~12h) so a lazy expand
+    never re-hits the NAVER quota for the same ingredient. Never raises.
 
     Returns dict keys: name, price, listing, url, mall, status, more_url.
     `status` is "ok" on a CONFIDENT match else "fallback" (the UI shows the
@@ -244,30 +247,51 @@ def fetch_online_price(display_name: str, query: str) -> dict:
         data = resp.json()
         listings = data.get("items") or []
         if listings:
-            # Pick the highest sim-ranked listing that is BOTH non-junk
-            # (bulk/foodservice/gift) AND not a processed/derived/wrong-
-            # category product (바지락 → "바지락칼국수 즉석식품"). If NONE
-            # qualifies we do NOT fabricate a guess from sim #1 — `item`
-            # stays the link-only fallback. Trust > coverage: the user's
-            # explicit 2026-05-19 choice (a wrong price is worse than none).
-            # DO NOT "restore" a sim#1 fallback here.
+            # Two-pass pick (user decision 2026-05-19, refined):
+            #   Pass 1 (ideal): non-junk AND non-processed — a RIGHT
+            #     product at a reasonable 1인 size.
+            #   Pass 2 (acceptable): a RIGHT product that is merely bulky/
+            #     large-unit (junk) — shown WITH the existing 묶음/대용량
+            #     caption (restores 양파/계란-type coverage; the raw title
+            #     makes the size transparent).
+            #   Neither ⇒ link-only fallback (`item` stays _fallback_item):
+            #     happens only when EVERY candidate is a WRONG product
+            #     (processed/wrong-category, e.g. 바지락 → 바지락칼국수).
+            # ❗ "Wrong product" (_looks_processed) is HARD-rejected in
+            # BOTH passes and must NEVER be relaxed; and we never fabricate
+            # a sim#1 guess. DO NOT collapse this back to a single pass.
+            def _cats(c):
+                return (
+                    c.get("category1") or "",
+                    c.get("category2") or "",
+                    c.get("category3") or "",
+                    c.get("category4") or "",
+                )
+
             top = None
             title = ""
+            # Pass 1 — right product, not bulky.
             for cand in listings:
                 cand_title = _strip_tags(cand.get("title", ""))
                 if not cand_title or _looks_junk(cand_title):
                     continue
-                cats = (
-                    cand.get("category1") or "",
-                    cand.get("category2") or "",
-                    cand.get("category3") or "",
-                    cand.get("category4") or "",
-                )
-                if _looks_processed(cand_title, cats):
+                if _looks_processed(cand_title, _cats(cand)):
                     continue
                 top = cand
                 title = cand_title
                 break
+            # Pass 2 — right product even if bulky (caption covers size);
+            # wrong product (processed/category) still hard-rejected.
+            if top is None:
+                for cand in listings:
+                    cand_title = _strip_tags(cand.get("title", ""))
+                    if not cand_title:
+                        continue
+                    if _looks_processed(cand_title, _cats(cand)):
+                        continue
+                    top = cand
+                    title = cand_title
+                    break
             if top is not None:
                 link = top.get("link") or ""
                 mall = top.get("mallName") or ""
