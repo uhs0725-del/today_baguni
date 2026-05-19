@@ -1095,6 +1095,33 @@ body.has-actionbar .app {
   opacity: 0.85;
 }
 
+/* ---------- PWA back-to-exit toast ---------- */
+.exit-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  z-index: 9999;
+  max-width: 80vw;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(20, 22, 26, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.exit-toast.is-on {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ---------- footer ---------- */
 .footer {
   margin-top: 28px;

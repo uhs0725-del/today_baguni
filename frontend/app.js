@@ -24,6 +24,7 @@
     comboBackdrop: document.getElementById("combo-backdrop"),
     comboClose: document.getElementById("combo-close"),
     comboBody: document.getElementById("combo-body"),
+    exitToast: document.getElementById("exit-toast"),
   };
 
   // Selected ingredient names (server resolves combo recipes by name).
@@ -1072,5 +1073,92 @@
   els.comboClose.addEventListener("click", closeSheet);
   els.comboBackdrop.addEventListener("click", closeSheet);
 
+  // ---------------------------------------------------------------------
+  // PWA "한 번 더 누르면 종료" back guard. ONLY in installed/standalone mode
+  // — in a normal browser tab Back must keep its native meaning, so we do
+  // NOT hijack it there. Mechanism: a History sentinel + popstate. Back
+  // while the recipe sheet is open just closes the sheet. At the app root,
+  // the first Back shows a brief toast and is cancelled; a second Back
+  // within 2s actually leaves (closes the installed app). iOS standalone
+  // has no system Back key, so this is effectively an Android pattern
+  // (harmless no-op elsewhere).
+  // ---------------------------------------------------------------------
+  function isStandalone() {
+    try {
+      return (
+        (window.matchMedia &&
+          window.matchMedia("(display-mode: standalone)").matches) ||
+        window.navigator.standalone === true
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  var exitToastTimer = null;
+
+  function showExitToast() {
+    if (!els.exitToast) return;
+    els.exitToast.hidden = false;
+    // Force a reflow so the fade-in transition runs even on re-show.
+    void els.exitToast.offsetWidth;
+    els.exitToast.classList.add("is-on");
+  }
+
+  function hideExitToast() {
+    if (!els.exitToast) return;
+    els.exitToast.classList.remove("is-on");
+    setTimeout(function () {
+      if (els.exitToast && !els.exitToast.classList.contains("is-on")) {
+        els.exitToast.hidden = true;
+      }
+    }, 220);
+  }
+
+  function setupBackGuard() {
+    if (!isStandalone()) return;
+    var armed = false;
+
+    function pushSentinel() {
+      try {
+        history.pushState({ _baguni_guard: 1 }, "");
+      } catch (e) {}
+    }
+
+    // Seed one sentinel so the first Back lands in popstate (not "leave").
+    pushSentinel();
+
+    window.addEventListener("popstate", function () {
+      // 1) Back closes an open recipe sheet first.
+      if (els.comboSheet && !els.comboSheet.hidden) {
+        closeSheet();
+        pushSentinel();
+        return;
+      }
+      // 2) App root: 1st Back = warn + cancel; 2nd Back (≤2s) = leave.
+      if (!armed) {
+        armed = true;
+        showExitToast();
+        pushSentinel(); // cancel this Back — stay in the app
+        if (exitToastTimer) clearTimeout(exitToastTimer);
+        exitToastTimer = setTimeout(function () {
+          armed = false;
+          hideExitToast();
+        }, 2000);
+        return;
+      }
+      // armed && within 2s: let it leave. We did NOT re-push; step back
+      // once more past the original entry → installed PWA closes.
+      if (exitToastTimer) clearTimeout(exitToastTimer);
+      hideExitToast();
+      setTimeout(function () {
+        try {
+          history.back();
+        } catch (e) {}
+      }, 0);
+    });
+  }
+
+  setupBackGuard();
   load();
 })();
