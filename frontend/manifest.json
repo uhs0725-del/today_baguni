@@ -1,6 +1,6 @@
 {
-  "name": "오늘의 장바구니",
-  "short_name": "장바구니",
+  "name": "장보기 친구",
+  "short_name": "장보기 친구",
   "description": "지금 평소보다 싸고 1인이 안 버릴 식재료 추천",
   "start_url": "/",
   "scope": "/",

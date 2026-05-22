@@ -4,20 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#2f6bff" />
-  <title>오늘의 장바구니 · 자취 식탁</title>
+  <title>장보기 친구 · 오늘의 마트 가이드</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="오늘의 장바구니" />
+  <meta name="apple-mobile-web-app-title" content="장보기 친구" />
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/static/style.css?v=14" />
+  <link rel="stylesheet" href="/static/style.css?v=15" />
 </head>
 <body>
   <div class="app">
     <header class="header">
-      <h1 class="header__title">오늘의 장바구니<span class="header__date" id="today-date">불러오는 중…</span></h1>
+      <h1 class="header__title">장보기 친구<span class="header__date" id="today-date">불러오는 중…</span></h1>
       <span class="badge badge--sample" id="sample-badge" hidden>샘플 데이터 (KAMIS 키 연결 전)</span>
-      <p class="header__sub">지금 평소보다 싸고, 1인이 안 버리고 잘 먹을 재료순</p>
+      <p class="header__sub">오늘의 마트 가이드</p>
     </header>
 
     <div class="recmenu" id="recmenu" hidden>
@@ -89,7 +89,7 @@
 
   <div class="exit-toast" id="exit-toast" role="status" aria-live="polite" hidden>한 번 더 뒤로 누르시면 종료됩니다</div>
 
-  <script src="/static/app.js?v=14"></script>
+  <script src="/static/app.js?v=15"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW reg failed',e)});});}</script>
 </body>
 </html>

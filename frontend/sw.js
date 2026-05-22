@@ -1,16 +1,16 @@
-/* Service worker for "오늘의 장바구니" PWA.
+/* Service worker for "장보기 친구" PWA.
  *
  * Strategy: network-first for GET navigations and same-origin static/shell
  * (live data stays fresh, offline still loads the app shell). API responses
  * (/api/) are NEVER cached — always network; offline lets them fail naturally.
  * Everything is wrapped defensively so a SW error never breaks the site.
  */
-const CACHE = "baguni-v14";
+const CACHE = "baguni-v15";
 
 const SHELL = [
   "/",
-  "/static/style.css?v=14",
-  "/static/app.js?v=14",
+  "/static/style.css?v=15",
+  "/static/app.js?v=15",
   "/manifest.json",
   "/static/icons/icon-192.png",
   "/static/icons/icon-512.png",
