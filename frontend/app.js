@@ -72,8 +72,10 @@
     } else {
       d = new Date();
     }
+    // Short weekday ("수") so the date fits inline next to the title on
+    // small mobile widths without wrapping. (Was "수요일".)
     return (
-      d.getMonth() + 1 + "월 " + d.getDate() + "일 " + WEEKDAYS[d.getDay()] + "요일"
+      d.getMonth() + 1 + "월 " + d.getDate() + "일 " + WEEKDAYS[d.getDay()]
     );
   }
 
@@ -255,17 +257,24 @@
     moreHint.appendChild(moreLabel);
     moreHint.appendChild(moreChev);
 
+    // moreHint sits at the BOTTOM of the card (not between head and
+    // detail) so when expanded it stays under the detail and works as a
+    // visible "접기 ▴" close affordance; when collapsed it appears right
+    // under the head (detail is display:none) as the "자세히 ▾" cue.
     li.appendChild(head);
-    li.appendChild(moreHint);
     li.appendChild(detail);
+    li.appendChild(moreHint);
 
     // Toggle open/closed. Lazy-fetch the online price the FIRST time this
     // card opens (and only on open) — cached by name so re-expanding (or
     // another card with the same ingredient) never refetches / re-hits the
-    // quota. Shared by the head and the "자세히" affordance.
+    // quota. The label swaps and the chevron flips (CSS) for the open
+    // affordance.
     function toggleOpen() {
       li.classList.toggle("is-open");
-      if (li.classList.contains("is-open")) {
+      var open = li.classList.contains("is-open");
+      moreLabel.textContent = open ? "접기" : "자세히";
+      if (open) {
         loadOnlinePrice(item.name, onlineBox);
       }
     }

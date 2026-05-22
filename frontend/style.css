@@ -54,28 +54,31 @@ body.has-actionbar .app {
 }
 
 .header__title {
-  font-size: 27px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
+/* Date sits INSIDE the h1 (inline with the title) so the header stays
+   compact on the first viewport. The "·" separator is a CSS pseudo —
+   keeps JS just setting the date text. */
 .header__date {
-  margin-top: 6px;
-  font-size: 15px;
-  color: var(--ink-soft);
+  margin-left: 8px;
+  font-size: 14px;
   font-weight: 600;
+  color: var(--ink-soft);
+  letter-spacing: -0.01em;
+}
+
+.header__date::before {
+  content: "· ";
+  color: var(--ink-faint);
+  margin-right: 2px;
 }
 
 .header__sub {
-  margin-top: 12px;
-  font-size: 14px;
-  color: var(--ink-faint);
-}
-
-.header__note {
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 12px;
-  line-height: 1.5;
   color: var(--ink-faint);
 }
 
@@ -750,12 +753,16 @@ body.has-actionbar .app {
 }
 
 .card__more-chev {
+  display: inline-block;
   font-size: 11px;
   line-height: 1;
+  transition: transform 0.18s ease;
 }
 
-.card.is-open .card__more {
-  display: none;
+/* Hint stays visible when open (the JS swaps "자세히" → "접기" and we
+   flip the chevron so the same row works as the close affordance). */
+.card.is-open .card__more-chev {
+  transform: rotate(180deg);
 }
 
 @keyframes fade {
@@ -1139,7 +1146,7 @@ body.has-actionbar .app {
     padding-bottom: 116px;
   }
   .header__title {
-    font-size: 24px;
+    font-size: 20px;
   }
   .recmenu {
     padding: 14px 16px 16px;

@@ -10,16 +10,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="오늘의 장바구니" />
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/static/style.css?v=13" />
+  <link rel="stylesheet" href="/static/style.css?v=14" />
 </head>
 <body>
   <div class="app">
     <header class="header">
-      <h1 class="header__title">오늘의 장바구니</h1>
-      <p class="header__date" id="today-date">불러오는 중…</p>
+      <h1 class="header__title">오늘의 장바구니<span class="header__date" id="today-date">불러오는 중…</span></h1>
       <span class="badge badge--sample" id="sample-badge" hidden>샘플 데이터 (KAMIS 키 연결 전)</span>
       <p class="header__sub">지금 평소보다 싸고, 1인이 안 버리고 잘 먹을 재료순</p>
-      <p class="header__note">표시 가격은 KAMIS 전국 평균 소매 기준가예요. 동네 마트·시장·온라인에 따라 달라질 수 있어요.</p>
     </header>
 
     <div class="recmenu" id="recmenu" hidden>
@@ -68,7 +66,7 @@
     </main>
 
     <footer class="footer">
-      <p>가격은 KAMIS 농산물유통정보 기준 · 레시피는 외부 검색 결과로 연결됩니다</p>
+      <p>가격은 KAMIS 전국 평균 소매 기준 · 레시피는 외부 검색 결과로 연결됩니다</p>
     </footer>
   </div>
 
@@ -91,7 +89,7 @@
 
   <div class="exit-toast" id="exit-toast" role="status" aria-live="polite" hidden>한 번 더 뒤로 누르시면 종료됩니다</div>
 
-  <script src="/static/app.js?v=13"></script>
+  <script src="/static/app.js?v=14"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW reg failed',e)});});}</script>
 </body>
 </html>
