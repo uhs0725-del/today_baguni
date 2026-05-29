@@ -545,6 +545,23 @@
   function renderRecipeResults(wrap, rrData) {
     wrap.innerHTML = "";
     var sources = (rrData && rrData.sources) || [];
+
+    // Across all sources: did anything match in-app? If NOT (the strict-
+    // filter rare-combo case), show one clear banner up top — right under
+    // the selected-ingredient chips — so the "X에서 검색" links below read
+    // as an intentional fallback, not a glitch.
+    var okCount = sources.filter(function (s) {
+      return s.status === "ok" && s.results && s.results.length > 0;
+    }).length;
+    var allEmpty = sources.length > 0 && okCount === 0;
+    if (allEmpty) {
+      var banner = document.createElement("p");
+      banner.className = "rr-allempty";
+      banner.textContent =
+        "😅 이 재료 조합엔 딱 맞는 인앱 레시피가 없어요. 아래에서 직접 검색해 보세요.";
+      wrap.appendChild(banner);
+    }
+
     sources.forEach(function (src) {
       var section = document.createElement("div");
       section.className = "rr-section";
@@ -604,7 +621,17 @@
           section.appendChild(more);
         }
       } else {
-        // Graceful fallback: the current single deep-link button.
+        // No in-app results for THIS source. In the MIXED case (some other
+        // source DID have results) flag this one per-source with an emoji;
+        // when EVERYTHING is empty the top banner already says it, so we
+        // skip the per-source note and just show the search fallback.
+        if (!allEmpty) {
+          var empty = document.createElement("p");
+          empty.className = "rr-empty";
+          empty.textContent = "😶 이 재료론 인앱 결과가 없어요";
+          section.appendChild(empty);
+        }
+        // Graceful fallback: the external-search deep-link button.
         var btn = document.createElement("a");
         btn.className = "recipe-btn";
         btn.href = src.more_url || "#";
