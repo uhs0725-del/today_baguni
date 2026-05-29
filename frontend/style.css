@@ -289,6 +289,114 @@ body.has-actionbar .app {
   }
 }
 
+/* ---------- skeleton loading (shimmer) ---------- */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #edeef1 25%, #f7f8fa 50%, #edeef1 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .spinner {
+    animation-duration: 4s;
+  }
+}
+
+/* initial card-list skeleton */
+.skel-list {
+  display: block;
+}
+
+.skel-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.skel-col {
+  flex: 1;
+}
+
+.skel-line {
+  height: 14px;
+  margin-bottom: 10px;
+}
+
+.skel-line--title {
+  width: 45%;
+  height: 20px;
+}
+
+.skel-line--price {
+  width: 60%;
+}
+
+.skel-line--tag {
+  width: 30%;
+  height: 12px;
+  margin-bottom: 0;
+}
+
+.skel-pill {
+  width: 64px;
+  height: 30px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* recipe-results skeleton (inside the combo sheet) */
+.rr-skel-msg {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: center;
+  padding: 2px 0 14px;
+}
+
+.rr-skel-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+}
+
+.rr-skel-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.rr-skel-lines {
+  flex: 1;
+}
+
+.rr-skel-line {
+  height: 13px;
+  margin-bottom: 9px;
+}
+
+.rr-skel-line--short {
+  width: 55%;
+  margin-bottom: 0;
+}
+
 .retry-btn {
   margin-top: 16px;
   background: var(--accent);
@@ -952,7 +1060,19 @@ body.has-actionbar .app {
   text-align: center;
   padding: 40px 16px;
   font-size: 14px;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
+}
+
+.bev-loading::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 26px;
+  margin: 14px auto 0;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 .bev-card {
@@ -1023,7 +1143,9 @@ body.has-actionbar .app {
 .online-loading {
   font-size: 13px;
   color: #0b5c39;
-  background: #e6f6ed;
+  background: linear-gradient(90deg, #e6f6ed 25%, #f1faf5 50%, #e6f6ed 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
   border: 1px solid #b9e3cb;
   padding: 11px 14px;
   border-radius: 12px;

@@ -237,7 +237,7 @@
     onlineBox.className = "online-box";
     var onlineLoading = document.createElement("div");
     onlineLoading.className = "online-loading";
-    onlineLoading.textContent = "네이버 쇼핑 최저가 확인하기";
+    onlineLoading.textContent = "네이버 가격 불러오는 중…";
     onlineBox.appendChild(onlineLoading);
     detail.appendChild(onlineBox);
 
@@ -515,10 +515,7 @@
     // deep-link buttons (data.recipe_links) — the unchanged old behaviour.
     var rrWrap = document.createElement("div");
     rrWrap.className = "rr-wrap";
-    var rrLoading = document.createElement("p");
-    rrLoading.className = "sheet__msg rr-loading";
-    rrLoading.textContent = "레시피 검색 결과 불러오는 중…";
-    rrWrap.appendChild(rrLoading);
+    rrWrap.appendChild(buildRecipeSkeleton());
     els.comboBody.appendChild(rrWrap);
 
     return rrWrap;
@@ -621,12 +618,68 @@
     });
   }
 
-  function showComboMessage(text) {
+  function showComboMessage(text, loading) {
     els.comboBody.innerHTML = "";
+    if (loading) {
+      var sp = document.createElement("div");
+      sp.className = "spinner";
+      sp.setAttribute("aria-hidden", "true");
+      els.comboBody.appendChild(sp);
+    }
     var p = document.createElement("p");
     p.className = "sheet__msg";
     p.textContent = text;
     els.comboBody.appendChild(p);
+  }
+
+  // Animated skeleton shown while /api/recipe-results loads. That fetch can
+  // take several seconds on a cold cache (we verify each recipe actually
+  // contains the chosen ingredients), so a static line read as "frozen".
+  // The shimmer + rotating message make it clearly "working". The interval
+  // self-clears once the node is replaced by the real results or fallback
+  // (msg.isConnected === false).
+  function buildRecipeSkeleton() {
+    var box = document.createElement("div");
+    box.className = "rr-skel";
+
+    var msg = document.createElement("p");
+    msg.className = "rr-skel-msg";
+    var msgs = [
+      "레시피 찾는 중…",
+      "재료가 실제로 들어간 것만 골라요",
+      "거의 다 됐어요…",
+    ];
+    var mi = 0;
+    msg.textContent = msgs[0];
+    box.appendChild(msg);
+
+    var timer = setInterval(function () {
+      if (!msg.isConnected) {
+        clearInterval(timer);
+        return;
+      }
+      mi = (mi + 1) % msgs.length;
+      msg.textContent = msgs[mi];
+    }, 2400);
+
+    for (var i = 0; i < 3; i++) {
+      var card = document.createElement("div");
+      card.className = "rr-skel-card";
+      var thumb = document.createElement("div");
+      thumb.className = "skeleton rr-skel-thumb";
+      var lines = document.createElement("div");
+      lines.className = "rr-skel-lines";
+      var l1 = document.createElement("div");
+      l1.className = "skeleton rr-skel-line";
+      var l2 = document.createElement("div");
+      l2.className = "skeleton rr-skel-line rr-skel-line--short";
+      lines.appendChild(l1);
+      lines.appendChild(l2);
+      card.appendChild(thumb);
+      card.appendChild(lines);
+      box.appendChild(card);
+    }
+    return box;
   }
 
   // Open the combo sheet for an explicit list of ingredient names. Used by
@@ -635,7 +688,7 @@
   function openComboFor(names) {
     if (!names || names.length === 0) return;
     els.comboSheet.hidden = false;
-    showComboMessage("레시피 찾는 중…");
+    showComboMessage("레시피 찾는 중…", true);
 
     var q = names
       .map(function (n) {

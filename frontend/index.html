@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="장보기 친구" />
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/static/style.css?v=15" />
+  <link rel="stylesheet" href="/static/style.css?v=16" />
 </head>
 <body>
   <div class="app">
@@ -32,9 +32,31 @@
     </div>
 
     <main class="feed" id="feed" aria-live="polite">
-      <div class="state" id="loading-state">
-        <div class="spinner" aria-hidden="true"></div>
-        <p>오늘 장바구니 고르는 중…</p>
+      <div class="skel-list" id="loading-state" aria-busy="true" aria-label="오늘 장보기 불러오는 중">
+        <div class="skel-card">
+          <div class="skel-col">
+            <div class="skeleton skel-line skel-line--title"></div>
+            <div class="skeleton skel-line skel-line--price"></div>
+            <div class="skeleton skel-line skel-line--tag"></div>
+          </div>
+          <div class="skeleton skel-pill"></div>
+        </div>
+        <div class="skel-card">
+          <div class="skel-col">
+            <div class="skeleton skel-line skel-line--title"></div>
+            <div class="skeleton skel-line skel-line--price"></div>
+            <div class="skeleton skel-line skel-line--tag"></div>
+          </div>
+          <div class="skeleton skel-pill"></div>
+        </div>
+        <div class="skel-card">
+          <div class="skel-col">
+            <div class="skeleton skel-line skel-line--title"></div>
+            <div class="skeleton skel-line skel-line--price"></div>
+            <div class="skeleton skel-line skel-line--tag"></div>
+          </div>
+          <div class="skeleton skel-pill"></div>
+        </div>
       </div>
 
       <div class="state state--error" id="error-state" hidden>
@@ -89,7 +111,7 @@
 
   <div class="exit-toast" id="exit-toast" role="status" aria-live="polite" hidden>한 번 더 뒤로 누르시면 종료됩니다</div>
 
-  <script src="/static/app.js?v=15"></script>
+  <script src="/static/app.js?v=16"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW reg failed',e)});});}</script>
 </body>
 </html>
