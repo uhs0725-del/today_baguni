@@ -313,9 +313,12 @@ body.has-actionbar .app {
   }
 }
 
-/* initial card-list skeleton */
-.skel-list {
-  display: block;
+/* initial card-list skeleton. NOTE: do NOT set `display: block` on
+   .skel-list — the container is a plain <div> (already block), and an
+   explicit display here would OVERRIDE the [hidden] attribute the JS
+   toggles, leaving the skeleton shimmering forever over the real cards. */
+.skel-list[hidden] {
+  display: none;
 }
 
 .skel-card {
