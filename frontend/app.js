@@ -558,7 +558,7 @@
       var banner = document.createElement("p");
       banner.className = "rr-allempty";
       banner.textContent =
-        "😅 이 재료 조합엔 딱 맞는 인앱 레시피가 없어요. 아래에서 직접 검색해 보세요.";
+        "😅 이 재료 조합엔 딱 맞는 레시피가 없어요. 아래에서 직접 검색해 보세요.";
       wrap.appendChild(banner);
     }
 
@@ -628,7 +628,7 @@
         if (!allEmpty) {
           var empty = document.createElement("p");
           empty.className = "rr-empty";
-          empty.textContent = "😶 이 재료론 인앱 결과가 없어요";
+          empty.textContent = "😶 이 재료론 레시피가 없어요";
           section.appendChild(empty);
         }
         // Graceful fallback: the external-search deep-link button.
