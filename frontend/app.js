@@ -14,6 +14,7 @@
     recmenu: document.getElementById("recmenu"),
     recmenuChips: document.getElementById("recmenu-chips"),
     recmenuGo: document.getElementById("recmenu-go"),
+    recmenuShare: document.getElementById("recmenu-share"),
     feedEmpty: document.getElementById("feed-empty"),
     retry: document.getElementById("retry-btn"),
     actionbar: document.getElementById("actionbar"),
@@ -1152,10 +1153,161 @@
     if (sort && sort !== activeSort) setActiveSort(sort);
   });
 
+  // ---------------------------------------------------------------------
+  // 공유 카드 (viral acquisition): render today's best deals to a branded
+  // PNG via <canvas>, then share it with the Web Share API (KakaoTalk etc.
+  // on mobile). Desktop / unsupported → download the image + copy the link.
+  // Frontend-only, no backend, no keys, no copyright concern (our own data).
+  // ---------------------------------------------------------------------
+  var _SHARE_URL = "https://today-baguni.onrender.com";
+  var _KFONT =
+    "-apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif";
+
+  function _roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function buildShareCanvas(deals) {
+    var W = 800,
+      H = 800;
+    var canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    var ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#eaf0ff";
+    ctx.fillRect(0, 0, W, H);
+
+    var m = 52;
+    _roundRect(ctx, m, m, W - m * 2, H - m * 2, 40);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+
+    var cx = W / 2;
+    ctx.textAlign = "center";
+
+    ctx.fillStyle = "#2f6bff";
+    ctx.font = "800 58px " + _KFONT;
+    ctx.fillText("장보기 친구", cx, 188);
+    ctx.fillStyle = "#9aa3b2";
+    ctx.font = "600 28px " + _KFONT;
+    ctx.fillText("오늘의 마트 가이드", cx, 234);
+
+    ctx.fillStyle = "#1a1c20";
+    ctx.font = "800 42px " + _KFONT;
+    ctx.fillText("오늘 평소보다 싸졌어요 🔥", cx, 326);
+
+    var rx1 = m + 70,
+      rx2 = W - m - 70,
+      y = 432;
+    var shown = (deals || []).slice(0, 3);
+    if (shown.length === 0) {
+      ctx.fillStyle = "#9aa3b2";
+      ctx.font = "600 30px " + _KFONT;
+      ctx.fillText("오늘의 추천 재료를 확인해보세요", cx, y);
+    } else {
+      shown.forEach(function (it) {
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#1a1c20";
+        ctx.font = "700 44px " + _KFONT;
+        ctx.fillText(it.name, rx1, y);
+        if (it.change_pct !== null && it.change_pct !== undefined) {
+          ctx.textAlign = "right";
+          ctx.fillStyle = "#06a35a";
+          ctx.font = "800 44px " + _KFONT;
+          ctx.fillText(
+            "▼" + Math.abs(Math.round(it.change_pct)) + "%",
+            rx2,
+            y
+          );
+        }
+        y += 92;
+      });
+    }
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#9aa3b2";
+    ctx.font = "600 26px " + _KFONT;
+    ctx.fillText("today-baguni.onrender.com", cx, H - m - 44);
+
+    return canvas;
+  }
+
+  function _flashShareDone(text) {
+    if (!els.recmenuShare) return;
+    var orig =
+      els.recmenuShare.getAttribute("data-label") ||
+      els.recmenuShare.textContent;
+    els.recmenuShare.setAttribute("data-label", orig);
+    els.recmenuShare.textContent = text;
+    els.recmenuShare.disabled = true;
+    setTimeout(function () {
+      els.recmenuShare.textContent = orig;
+      els.recmenuShare.disabled = false;
+    }, 2200);
+  }
+
+  function shareTodayCard() {
+    var text =
+      "오늘 평소보다 싸진 재료 모음! 🛒 장보기 친구 · 오늘의 마트 가이드\n" +
+      _SHARE_URL;
+    var deals = top3Names.map(itemByName).filter(function (x) {
+      return !!x;
+    });
+    var canvas = null;
+    try {
+      canvas = buildShareCanvas(deals);
+    } catch (e) {
+      canvas = null;
+    }
+    if (!canvas || !canvas.toBlob) {
+      if (navigator.share)
+        navigator.share({ title: "장보기 친구", text: text }).catch(function () {});
+      return;
+    }
+    canvas.toBlob(function (blob) {
+      var file = blob
+        ? new File([blob], "jangboki-chingu.png", { type: "image/png" })
+        : null;
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator
+          .share({ title: "장보기 친구", text: text, files: [file] })
+          .catch(function () {});
+        return;
+      }
+      // Fallback: download the image + copy the link.
+      if (blob) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "jangboki-chingu.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () {
+          URL.revokeObjectURL(a.href);
+        }, 1500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(_SHARE_URL).catch(function () {});
+      }
+      _flashShareDone("카드 저장 + 링크 복사됨 ✓");
+    }, "image/png");
+  }
+
   els.recmenuGo.addEventListener("click", function () {
     // Same path as the action bar — recipes for the one shared basket.
     openComboFor(selected);
   });
+
+  if (els.recmenuShare) {
+    els.recmenuShare.addEventListener("click", shareTodayCard);
+  }
 
   els.actionbarClear.addEventListener("click", clearSelection);
   els.actionbarGo.addEventListener("click", openCombo);

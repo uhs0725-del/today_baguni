@@ -255,6 +255,30 @@ body.has-actionbar .app {
   opacity: 1;
 }
 
+.recmenu__share {
+  margin-top: 8px;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c05a1c;
+  background: #fff3e6;
+  border: 1px solid #ffd9b0;
+  padding: 11px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.recmenu__share:active {
+  opacity: 0.85;
+}
+
+.recmenu__share:disabled {
+  color: #0b5c39;
+  background: #e6f6ed;
+  border-color: #b9e3cb;
+  cursor: default;
+}
+
 /* ---------- states ---------- */
 .state {
   text-align: center;

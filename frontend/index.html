@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#2f6bff" />
   <title>장보기 친구 · 오늘의 마트 가이드</title>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="장보기 친구 · 오늘의 마트 가이드" />
+  <meta property="og:description" content="오늘 평소보다 싸진 식재료를 알려드려요. 1인 가구·초보 요리 친화 마트 가이드." />
+  <meta property="og:image" content="https://today-baguni.onrender.com/static/icons/icon-512.png" />
+  <meta property="og:url" content="https://today-baguni.onrender.com" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="장보기 친구" />
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/static/style.css?v=19" />
+  <link rel="stylesheet" href="/static/style.css?v=20" />
 </head>
 <body>
   <div class="app">
@@ -29,6 +34,7 @@
       </p>
       <div class="recmenu__chips" id="recmenu-chips"></div>
       <button class="recmenu__go" id="recmenu-go" type="button">선택한 재료로 레시피 보기</button>
+      <button class="recmenu__share" id="recmenu-share" type="button">🔥 오늘 딜 친구에게 공유</button>
     </div>
 
     <main class="feed" id="feed" aria-live="polite">
@@ -111,7 +117,7 @@
 
   <div class="exit-toast" id="exit-toast" role="status" aria-live="polite" hidden>한 번 더 뒤로 누르시면 종료됩니다</div>
 
-  <script src="/static/app.js?v=19"></script>
+  <script src="/static/app.js?v=20"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW reg failed',e)});});}</script>
 </body>
 </html>
