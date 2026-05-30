@@ -519,6 +519,21 @@
     });
     els.comboBody.appendChild(chips);
 
+    // Share THIS selection's recipes. The shared link carries the chosen
+    // ingredients (?items=…) so the friend's app opens with them pre-
+    // selected and the recipe sheet auto-open — they see the same recipes.
+    var shareNames = (data.items || []).slice();
+    if (shareNames.length) {
+      var rsBtn = document.createElement("button");
+      rsBtn.type = "button";
+      rsBtn.className = "sheet__share";
+      rsBtn.textContent = "📋 이 재료 레시피 친구에게 공유";
+      rsBtn.addEventListener("click", function () {
+        shareRecipeCard(shareNames, rsBtn);
+      });
+      els.comboBody.appendChild(rsBtn);
+    }
+
     // Below the chips: a container the inline real results (3 source
     // sections) fill in. Until /api/recipe-results resolves it shows a
     // brief loading line; on any failure it falls back to the existing
@@ -1134,6 +1149,9 @@
     // the preselected top3 (renderCards already calls this, but be explicit).
     syncSelectionUI();
     show("cards");
+    // If the friend arrived via a shared recipe link (?items=…), pre-select
+    // those ingredients and auto-open their recipes.
+    consumeDeepLink();
   }
 
   function load() {
@@ -1310,6 +1328,154 @@
       }
       _flashShareDone("카드 저장 + 링크 복사됨 ✓");
     }, "image/png");
+  }
+
+  // ---- recipe share (selected ingredients → deep-link) ----
+  function _flashBtn(btn, text) {
+    if (!btn) return;
+    var orig = btn.getAttribute("data-label") || btn.textContent;
+    btn.setAttribute("data-label", orig);
+    btn.textContent = text;
+    btn.disabled = true;
+    setTimeout(function () {
+      btn.textContent = orig;
+      btn.disabled = false;
+    }, 2200);
+  }
+
+  function _recipeDeepLink(names) {
+    return _SHARE_URL + "/?items=" + names.map(encodeURIComponent).join(",");
+  }
+
+  function buildRecipeShareCanvas(names) {
+    var W = 800,
+      H = 800;
+    var canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    var ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#eaf0ff";
+    ctx.fillRect(0, 0, W, H);
+    var m = 52;
+    _roundRect(ctx, m, m, W - m * 2, H - m * 2, 40);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+
+    var cx = W / 2;
+    ctx.textAlign = "center";
+
+    ctx.fillStyle = "#2f6bff";
+    ctx.font = "800 58px " + _KFONT;
+    ctx.fillText("장보기 친구", cx, 180);
+    ctx.fillStyle = "#9aa3b2";
+    ctx.font = "600 28px " + _KFONT;
+    ctx.fillText("오늘의 마트 가이드", cx, 224);
+
+    ctx.fillStyle = "#1a1c20";
+    ctx.font = "800 42px " + _KFONT;
+    ctx.fillText("이 재료로 뭐 해먹지? 🍳", cx, 332);
+
+    var label = names.join(" · ");
+    var fs = 46;
+    ctx.fillStyle = "#06a35a";
+    ctx.font = "800 " + fs + "px " + _KFONT;
+    while (fs > 24 && ctx.measureText(label).width > W - m * 2 - 70) {
+      fs -= 2;
+      ctx.font = "800 " + fs + "px " + _KFONT;
+    }
+    ctx.fillText(label, cx, 452);
+
+    ctx.fillStyle = "#1a1c20";
+    ctx.font = "700 34px " + _KFONT;
+    ctx.fillText("레시피 보러가기 →", cx, 562);
+
+    ctx.fillStyle = "#9aa3b2";
+    ctx.font = "600 26px " + _KFONT;
+    ctx.fillText("today-baguni.onrender.com", cx, H - m - 44);
+
+    return canvas;
+  }
+
+  function shareRecipeCard(names, btn) {
+    names = (names || []).filter(function (n) {
+      return !!n;
+    });
+    if (!names.length) return;
+    var deepUrl = _recipeDeepLink(names);
+    var text =
+      "내가 고른 재료(" +
+      names.join(", ") +
+      ")로 만들 레시피! 🍳 장보기 친구\n" +
+      deepUrl;
+    var canvas = null;
+    try {
+      canvas = buildRecipeShareCanvas(names);
+    } catch (e) {
+      canvas = null;
+    }
+    if (!canvas || !canvas.toBlob) {
+      if (navigator.share)
+        navigator.share({ title: "장보기 친구", text: text }).catch(function () {});
+      return;
+    }
+    canvas.toBlob(function (blob) {
+      var file = blob
+        ? new File([blob], "jangboki-recipe.png", { type: "image/png" })
+        : null;
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator
+          .share({ title: "장보기 친구", text: text, files: [file] })
+          .catch(function () {});
+        return;
+      }
+      if (blob) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "jangboki-recipe.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () {
+          URL.revokeObjectURL(a.href);
+        }, 1500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(deepUrl).catch(function () {});
+      }
+      _flashBtn(btn, "카드 저장 + 링크 복사됨 ✓");
+    }, "image/png");
+  }
+
+  // Friend opened a shared recipe link (?items=A,B): pre-select those
+  // ingredients and auto-open the recipe sheet so they see the same recipes.
+  var _deepLinkDone = false;
+  function consumeDeepLink() {
+    if (_deepLinkDone) return;
+    _deepLinkDone = true;
+    var q = null;
+    try {
+      q = new URLSearchParams(window.location.search).get("items");
+    } catch (e) {
+      q = null;
+    }
+    if (!q) return;
+    var names = q
+      .split(",")
+      .map(function (s) {
+        return s.trim();
+      })
+      .filter(function (s) {
+        return s.length > 0;
+      });
+    if (!names.length) return;
+    // clean the URL so a refresh / back doesn't re-open the sheet
+    try {
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch (e) {}
+    selected = names.slice();
+    syncSelectionUI();
+    openComboFor(selected);
   }
 
   els.recmenuGo.addEventListener("click", function () {

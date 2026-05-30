@@ -279,6 +279,32 @@ body.has-actionbar .app {
   cursor: default;
 }
 
+/* recipe-share button inside the combo sheet */
+.sheet__share {
+  display: block;
+  width: 100%;
+  margin: 2px 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2f6bff;
+  background: #eef3ff;
+  border: 1px solid #cfe0ff;
+  padding: 11px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.sheet__share:active {
+  opacity: 0.85;
+}
+
+.sheet__share:disabled {
+  color: #0b5c39;
+  background: #e6f6ed;
+  border-color: #b9e3cb;
+  cursor: default;
+}
+
 /* ---------- funbar (오늘의 꿀팁 + 룰렛) ---------- */
 .funbar {
   display: flex;
