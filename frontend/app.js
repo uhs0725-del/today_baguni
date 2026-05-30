@@ -1357,6 +1357,8 @@
   var _ROLL_STAPLES = { 양파: 1, 대파: 1, 마늘: 1, 생강: 1 };
   var _rollPick = null;
   var _rollTimer = null;
+  var _rollStopT = null;
+  var _rollSpinning = false;
 
   function _rollNames() {
     var pool = allItems.filter(function (it) {
@@ -1368,36 +1370,56 @@
     });
   }
 
-  function spinRoulette() {
+  // Slot-machine style: spin keeps going until the user taps 그만 (or a 7s
+  // safety auto-stop). 레시피 보기 only works once stopped.
+  function _startSpin() {
     var names = _rollNames();
     if (!names.length) return;
     if (_rollTimer) clearInterval(_rollTimer);
-    if (els.rollAgain) els.rollAgain.disabled = true;
+    if (_rollStopT) clearTimeout(_rollStopT);
+    _rollSpinning = true;
+    _rollPick = null;
+    if (els.rollAgain) els.rollAgain.textContent = "✋ 그만";
     if (els.rollRecipe) els.rollRecipe.disabled = true;
-    var ticks = 0;
-    var total = 16 + Math.floor(Math.random() * 6);
     _rollTimer = setInterval(function () {
       els.rollPick.textContent =
         names[Math.floor(Math.random() * names.length)];
-      ticks++;
-      if (ticks >= total) {
-        clearInterval(_rollTimer);
-        _rollTimer = null;
-        _rollPick = els.rollPick.textContent;
-        els.rollPick.classList.add("is-final");
-        setTimeout(function () {
-          if (els.rollPick) els.rollPick.classList.remove("is-final");
-        }, 450);
-        if (els.rollAgain) els.rollAgain.disabled = false;
-        if (els.rollRecipe) els.rollRecipe.disabled = false;
-      }
-    }, 55);
+    }, 60);
+    _rollStopT = setTimeout(function () {
+      if (_rollSpinning) _stopSpin();
+    }, 7000);
+  }
+
+  function _stopSpin() {
+    if (_rollTimer) {
+      clearInterval(_rollTimer);
+      _rollTimer = null;
+    }
+    if (_rollStopT) {
+      clearTimeout(_rollStopT);
+      _rollStopT = null;
+    }
+    if (!_rollSpinning) return;
+    _rollSpinning = false;
+    _rollPick = els.rollPick.textContent;
+    els.rollPick.classList.add("is-final");
+    setTimeout(function () {
+      if (els.rollPick) els.rollPick.classList.remove("is-final");
+    }, 450);
+    if (els.rollAgain) els.rollAgain.textContent = "🎲 다시";
+    if (els.rollRecipe) els.rollRecipe.disabled = false;
+  }
+
+  function _toggleSpin() {
+    if (_rollSpinning) _stopSpin();
+    else _startSpin();
   }
 
   function openRoulette() {
     if (!allItems.length || !els.rollPop) return;
     els.rollPop.hidden = false;
-    spinRoulette();
+    if (els.rollPick) els.rollPick.textContent = "?";
+    _startSpin();
   }
 
   function closeRoulette() {
@@ -1405,17 +1427,22 @@
       clearInterval(_rollTimer);
       _rollTimer = null;
     }
+    if (_rollStopT) {
+      clearTimeout(_rollStopT);
+      _rollStopT = null;
+    }
+    _rollSpinning = false;
     if (els.rollPop) els.rollPop.hidden = true;
   }
 
   function rollToRecipe() {
-    if (!_rollPick) return;
+    if (_rollSpinning || !_rollPick) return;
     closeRoulette();
     openComboFor([_rollPick]);
   }
 
   if (els.rollBtn) els.rollBtn.addEventListener("click", openRoulette);
-  if (els.rollAgain) els.rollAgain.addEventListener("click", spinRoulette);
+  if (els.rollAgain) els.rollAgain.addEventListener("click", _toggleSpin);
   if (els.rollRecipe) els.rollRecipe.addEventListener("click", rollToRecipe);
   if (els.rollClose) els.rollClose.addEventListener("click", closeRoulette);
   if (els.rollBackdrop)

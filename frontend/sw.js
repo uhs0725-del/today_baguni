@@ -5,12 +5,12 @@
  * (/api/) are NEVER cached — always network; offline lets them fail naturally.
  * Everything is wrapped defensively so a SW error never breaks the site.
  */
-const CACHE = "baguni-v21";
+const CACHE = "baguni-v22";
 
 const SHELL = [
   "/",
-  "/static/style.css?v=21",
-  "/static/app.js?v=21",
+  "/static/style.css?v=22",
+  "/static/app.js?v=22",
   "/manifest.json",
   "/static/icons/icon-192.png",
   "/static/icons/icon-512.png",

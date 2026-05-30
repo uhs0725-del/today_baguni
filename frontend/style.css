@@ -291,6 +291,11 @@ body.has-actionbar .app {
   border-radius: 14px;
 }
 
+/* explicit display above would defeat [hidden] the JS toggles — guard it */
+.funbar[hidden] {
+  display: none;
+}
+
 .funbar__tip {
   flex: 1;
   margin: 0;
@@ -324,6 +329,12 @@ body.has-actionbar .app {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* CRITICAL: display:flex above overrides [hidden] → without this guard the
+   popup never closes (X/backdrop set hidden=true but it stays visible) */
+.roll-pop[hidden] {
+  display: none;
 }
 
 .roll-pop__backdrop {
