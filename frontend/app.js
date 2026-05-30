@@ -15,6 +15,15 @@
     recmenuChips: document.getElementById("recmenu-chips"),
     recmenuGo: document.getElementById("recmenu-go"),
     recmenuShare: document.getElementById("recmenu-share"),
+    funbar: document.getElementById("funbar"),
+    dailyTip: document.getElementById("daily-tip"),
+    rollBtn: document.getElementById("roll-btn"),
+    rollPop: document.getElementById("roll-pop"),
+    rollBackdrop: document.getElementById("roll-backdrop"),
+    rollClose: document.getElementById("roll-close"),
+    rollPick: document.getElementById("roll-pick"),
+    rollAgain: document.getElementById("roll-again"),
+    rollRecipe: document.getElementById("roll-recipe"),
     feedEmpty: document.getElementById("feed-empty"),
     retry: document.getElementById("retry-btn"),
     actionbar: document.getElementById("actionbar"),
@@ -901,10 +910,13 @@
     if (picks.length === 0) {
       els.recmenu.hidden = true;
       els.recmenuChips.innerHTML = "";
+      if (els.funbar) els.funbar.hidden = true;
       return;
     }
     paintRecmenuChips();
     els.recmenu.hidden = false;
+    if (els.funbar) els.funbar.hidden = false;
+    setDailyTip();
   }
 
   // ---------------------------------------------------------------------
@@ -1308,6 +1320,106 @@
   if (els.recmenuShare) {
     els.recmenuShare.addEventListener("click", shareTodayCard);
   }
+
+  // ---------------------------------------------------------------------
+  // 오늘의 꿀팁 (date-seeded daily rotation) + "오늘 뭐 먹지?" 룰렛.
+  // Light engagement, fully client-side. Tips are a curated standalone
+  // list (no data dependency); the roulette spins through today's items.
+  // ---------------------------------------------------------------------
+  var _DAILY_TIPS = [
+    "양파는 망에 담아 바람 통하는 어두운 곳에 두면 한 달은 거뜬해요",
+    "대파는 쫑쫑 썰어 냉동하면 필요할 때 바로 꺼내 써요",
+    "감자와 양파는 같이 두면 빨리 상해요 — 따로 보관하세요",
+    "고기는 1회분씩 나눠 냉동하면 해동도 빠르고 안 버려요",
+    "시금치·나물은 데쳐서 소분 냉동하면 오래 가요",
+    "계란은 뾰족한 쪽이 아래로 가게 두면 더 오래 신선해요",
+    "다진 마늘은 큐브 틀에 얼려두면 쓰기 편해요",
+    "빵은 냉장 말고 냉동 — 먹을 만큼 꺼내 데우면 갓 구운 맛",
+    "상추·잎채소는 물기 닦아 키친타월에 싸서 냉장하세요",
+    "버섯은 씻지 말고 봉지째 냉장, 쓰기 직전에 털어내세요",
+    "생강은 껍질째 냉동해두고 필요할 때 갈아 쓰면 안 버려요",
+    "토마토는 냉장하면 맛이 떨어져요 — 실온에 두고 빨리 드세요",
+    "자취엔 '소분'이 핵심 — 사오면 바로 1회분씩 나눠두기",
+    "두부 남으면 물에 잠기게 담아 냉장, 물 자주 갈면 며칠 가요",
+    "우유는 유통기한 임박하면 얼려도 OK (해동 후 요리용)",
+    "멸치는 냉동 보관해야 눅눅함·비린내가 안 생겨요",
+    "바나나는 꼭지를 랩으로 감으면 갈변이 늦어져요",
+    "마른 김은 지퍼백에 실리카겔과 함께 두면 눅눅해지지 않아요",
+  ];
+
+  function setDailyTip() {
+    if (!els.dailyTip) return;
+    var d = new Date();
+    var seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate();
+    els.dailyTip.textContent = "💡 " + _DAILY_TIPS[seed % _DAILY_TIPS.length];
+  }
+
+  var _ROLL_STAPLES = { 양파: 1, 대파: 1, 마늘: 1, 생강: 1 };
+  var _rollPick = null;
+  var _rollTimer = null;
+
+  function _rollNames() {
+    var pool = allItems.filter(function (it) {
+      return !_ROLL_STAPLES[it.name];
+    });
+    if (pool.length < 3) pool = allItems;
+    return pool.map(function (it) {
+      return it.name;
+    });
+  }
+
+  function spinRoulette() {
+    var names = _rollNames();
+    if (!names.length) return;
+    if (_rollTimer) clearInterval(_rollTimer);
+    if (els.rollAgain) els.rollAgain.disabled = true;
+    if (els.rollRecipe) els.rollRecipe.disabled = true;
+    var ticks = 0;
+    var total = 16 + Math.floor(Math.random() * 6);
+    _rollTimer = setInterval(function () {
+      els.rollPick.textContent =
+        names[Math.floor(Math.random() * names.length)];
+      ticks++;
+      if (ticks >= total) {
+        clearInterval(_rollTimer);
+        _rollTimer = null;
+        _rollPick = els.rollPick.textContent;
+        els.rollPick.classList.add("is-final");
+        setTimeout(function () {
+          if (els.rollPick) els.rollPick.classList.remove("is-final");
+        }, 450);
+        if (els.rollAgain) els.rollAgain.disabled = false;
+        if (els.rollRecipe) els.rollRecipe.disabled = false;
+      }
+    }, 55);
+  }
+
+  function openRoulette() {
+    if (!allItems.length || !els.rollPop) return;
+    els.rollPop.hidden = false;
+    spinRoulette();
+  }
+
+  function closeRoulette() {
+    if (_rollTimer) {
+      clearInterval(_rollTimer);
+      _rollTimer = null;
+    }
+    if (els.rollPop) els.rollPop.hidden = true;
+  }
+
+  function rollToRecipe() {
+    if (!_rollPick) return;
+    closeRoulette();
+    openComboFor([_rollPick]);
+  }
+
+  if (els.rollBtn) els.rollBtn.addEventListener("click", openRoulette);
+  if (els.rollAgain) els.rollAgain.addEventListener("click", spinRoulette);
+  if (els.rollRecipe) els.rollRecipe.addEventListener("click", rollToRecipe);
+  if (els.rollClose) els.rollClose.addEventListener("click", closeRoulette);
+  if (els.rollBackdrop)
+    els.rollBackdrop.addEventListener("click", closeRoulette);
 
   els.actionbarClear.addEventListener("click", clearSelection);
   els.actionbarGo.addEventListener("click", openCombo);

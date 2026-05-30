@@ -279,6 +279,141 @@ body.has-actionbar .app {
   cursor: default;
 }
 
+/* ---------- funbar (오늘의 꿀팁 + 룰렛) ---------- */
+.funbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: #fffaf0;
+  border: 1px solid #ffe9c2;
+  border-radius: 14px;
+}
+
+.funbar__tip {
+  flex: 1;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #6b5836;
+}
+
+.funbar__roll {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.funbar__roll:active {
+  opacity: 0.85;
+}
+
+/* roulette popup */
+.roll-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roll-pop__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 18, 24, 0.45);
+}
+
+.roll-pop__panel {
+  position: relative;
+  width: min(86vw, 340px);
+  background: #fff;
+  border-radius: 22px;
+  padding: 32px 24px 24px;
+  text-align: center;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.3);
+  animation: sheet-up 0.22s ease;
+}
+
+.roll-pop__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.roll-pop__q,
+.roll-pop__sub {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.roll-pop__pick {
+  margin: 8px 0;
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  min-height: 46px;
+  transition: transform 0.15s ease;
+}
+
+.roll-pop__pick.is-final {
+  transform: scale(1.18);
+}
+
+.roll-pop__actions {
+  margin-top: 22px;
+  display: flex;
+  gap: 10px;
+}
+
+.roll-pop__again,
+.roll-pop__recipe {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.roll-pop__again {
+  color: var(--ink-soft);
+  background: var(--gray-pill);
+}
+
+.roll-pop__recipe {
+  color: #fff;
+  background: var(--accent);
+}
+
+.roll-pop__again:disabled,
+.roll-pop__recipe:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.roll-pop__again:active,
+.roll-pop__recipe:active {
+  opacity: 0.85;
+}
+
 /* ---------- states ---------- */
 .state {
   text-align: center;
