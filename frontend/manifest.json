@@ -10,8 +10,8 @@
   "theme_color": "#2f6bff",
   "lang": "ko",
   "icons": [
-    {"src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
-    {"src": "/static/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {"src": "/static/icons/icon-192.png?v=26", "sizes": "192x192", "type": "image/png"},
+    {"src": "/static/icons/icon-512.png?v=26", "sizes": "512x512", "type": "image/png"},
+    {"src": "/static/icons/maskable-512.png?v=26", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }

@@ -5,15 +5,15 @@
  * (/api/) are NEVER cached — always network; offline lets them fail naturally.
  * Everything is wrapped defensively so a SW error never breaks the site.
  */
-const CACHE = "baguni-v25";
+const CACHE = "baguni-v26";
 
 const SHELL = [
   "/",
-  "/static/style.css?v=25",
-  "/static/app.js?v=25",
+  "/static/style.css?v=26",
+  "/static/app.js?v=26",
   "/manifest.json",
-  "/static/icons/icon-192.png",
-  "/static/icons/icon-512.png",
+  "/static/icons/icon-192.png?v=26",
+  "/static/icons/icon-512.png?v=26",
 ];
 
 self.addEventListener("install", function (event) {
