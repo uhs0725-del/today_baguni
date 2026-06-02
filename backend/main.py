@@ -58,6 +58,7 @@ async def _no_cache_frontend(request, call_next):
         path == "/"
         or path == "/sw.js"
         or path == "/manifest.json"
+        or path == "/.well-known/assetlinks.json"
         or path.startswith("/static")
     ):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -340,6 +341,24 @@ def manifest() -> FileResponse:
     return FileResponse(
         _FRONTEND_DIR / "manifest.json", media_type="application/manifest+json"
     )
+
+
+@app.get("/.well-known/assetlinks.json")
+def assetlinks() -> FileResponse:
+    """Digital Asset Links — proves the Android TWA (Play Store) belongs to
+    this site so the installed app opens full-screen without a URL bar.
+    Fill sha256_cert_fingerprints after PWABuilder/Bubblewrap generates the
+    signing key."""
+    return FileResponse(
+        _FRONTEND_DIR / ".well-known" / "assetlinks.json",
+        media_type="application/json",
+    )
+
+
+@app.get("/privacy")
+def privacy() -> FileResponse:
+    """Privacy policy page (required for the Google Play listing)."""
+    return FileResponse(_FRONTEND_DIR / "privacy.html")
 
 
 # Static assets (style.css, app.js) served under /static.
