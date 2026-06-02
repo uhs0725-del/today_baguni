@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="장보기 친구" />
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/static/style.css?v=24" />
+  <link rel="stylesheet" href="/static/style.css?v=25" />
 </head>
 <body>
   <div class="app">
@@ -39,7 +39,7 @@
 
     <div class="funbar" id="funbar" hidden>
       <p class="funbar__tip" id="daily-tip">💡 불러오는 중…</p>
-      <button class="funbar__roll" id="roll-btn" type="button">🎲 오늘 뭐 먹지?</button>
+      <button class="funbar__roll" id="roll-btn" type="button">🎲 어떤 재료를 써볼까?</button>
     </div>
 
     <main class="feed" id="feed" aria-live="polite">
@@ -122,7 +122,7 @@
 
   <div class="roll-pop" id="roll-pop" hidden>
     <div class="roll-pop__backdrop" id="roll-backdrop"></div>
-    <div class="roll-pop__panel" role="dialog" aria-modal="true" aria-label="오늘 뭐 먹지">
+    <div class="roll-pop__panel" role="dialog" aria-modal="true" aria-label="어떤 재료를 써볼까">
       <button class="roll-pop__close" id="roll-close" type="button" aria-label="닫기">✕</button>
       <p class="roll-pop__q">오늘은…</p>
       <p class="roll-pop__pick" id="roll-pick">?</p>
@@ -136,7 +136,7 @@
 
   <div class="exit-toast" id="exit-toast" role="status" aria-live="polite" hidden>한 번 더 뒤로 누르시면 종료됩니다</div>
 
-  <script src="/static/app.js?v=24"></script>
+  <script src="/static/app.js?v=25"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW reg failed',e)});});}</script>
 </body>
 </html>
