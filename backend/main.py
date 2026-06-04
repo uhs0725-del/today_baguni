@@ -65,9 +65,10 @@ async def _no_cache_frontend(request, call_next):
     return response
 
 
-@app.get("/healthz")
+@app.api_route("/healthz", methods=["GET", "HEAD"])
 def healthz() -> dict:
-    """Liveness probe for PaaS health checks — no deps, no external calls."""
+    """Liveness probe for PaaS health checks + uptime pingers (UptimeRobot
+    defaults to HEAD) — no deps, no external calls. Keeps the dyno warm."""
     return {"ok": True}
 
 
@@ -322,7 +323,7 @@ def get_online_price(name: str = "") -> OnlinePriceResponse:
     return OnlinePriceResponse(**item, source="naver-shopping")
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def index() -> FileResponse:
     return FileResponse(_FRONTEND_DIR / "index.html")
 
