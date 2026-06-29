@@ -15,7 +15,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="장보기 친구" />
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png?v=26" />
-  <link rel="stylesheet" href="/static/style.css?v=26" />
+  <link rel="stylesheet" href="/static/style.css?v=27" />
 </head>
 <body>
   <div class="app">
@@ -74,6 +74,12 @@
         <p class="state__title">불러오지 못했어요</p>
         <p class="state__desc">잠시 후 다시 시도해 주세요.</p>
         <button class="retry-btn" id="retry-btn" type="button">다시 시도</button>
+      </div>
+
+      <div class="searchbar" id="searchbar" hidden>
+        <span class="searchbar__icon" aria-hidden="true">🔍</span>
+        <input class="searchbar__input" id="search-input" type="search" inputmode="search" enterkeyhint="search" placeholder="재료 검색 (예: 양파, 계란)" aria-label="재료 검색" autocomplete="off" />
+        <button class="searchbar__clear" id="search-clear" type="button" aria-label="검색 지우기" hidden>✕</button>
       </div>
 
       <div class="filters" id="filters" role="tablist" aria-label="분류 필터" hidden>
@@ -136,7 +142,7 @@
 
   <div class="exit-toast" id="exit-toast" role="status" aria-live="polite" hidden>한 번 더 뒤로 누르시면 종료됩니다</div>
 
-  <script src="/static/app.js?v=26"></script>
+  <script src="/static/app.js?v=27"></script>
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW reg failed',e)});});}</script>
 </body>
 </html>

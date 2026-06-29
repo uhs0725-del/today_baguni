@@ -35,6 +35,9 @@
     comboClose: document.getElementById("combo-close"),
     comboBody: document.getElementById("combo-body"),
     exitToast: document.getElementById("exit-toast"),
+    searchbar: document.getElementById("searchbar"),
+    searchInput: document.getElementById("search-input"),
+    searchClear: document.getElementById("search-clear"),
   };
 
   // Selected ingredient names (server resolves combo recipes by name).
@@ -46,6 +49,11 @@
   var allItems = [];
   var activeGroup = "전체";
   var OVERVIEW_LIMIT = 15;
+
+  // Free-text ingredient search. When non-empty it OVERRIDES the category chip
+  // AND the "전체" overview cap: matches by name across the whole list so any
+  // ingredient is findable from any tab. Empty = normal category view.
+  var searchQuery = "";
 
   // Sort applied inside the card list. Default mirrors the header sub-copy
   // ("평소보다 싸고"): cheapest-vs-usual first. Independent of the filter chip.
@@ -796,7 +804,8 @@
     els.loading.hidden = state !== "loading";
     els.error.hidden = state !== "error";
     els.cards.hidden = state !== "cards";
-    // Filter chips + sort selector only make sense once cards are present.
+    // Search box + filter chips + sort selector only make sense once cards are present.
+    els.searchbar.hidden = state !== "cards";
     els.filters.hidden = state !== "cards";
     els.sorts.hidden = state !== "cards";
     if (state !== "cards") {
@@ -1024,6 +1033,7 @@
   function showBeveragesTab() {
     els.recmenu.hidden = true;
     els.sorts.hidden = true;
+    els.searchbar.hidden = true;
 
     if (bevItems !== null) {
       renderBeverages("list");
@@ -1056,20 +1066,33 @@
   function renderCards() {
     els.cards.innerHTML = "";
 
-    var filtered =
-      activeGroup === "전체"
-        ? allItems
-        : allItems.filter(function (item) {
-            return item.group === activeGroup;
-          });
+    var q = searchQuery.trim().toLowerCase();
+    var filtered;
+    if (q) {
+      // Search matches by name across the WHOLE list (ignores the chip).
+      filtered = allItems.filter(function (item) {
+        return String(item.name).toLowerCase().indexOf(q) !== -1;
+      });
+    } else {
+      filtered =
+        activeGroup === "전체"
+          ? allItems
+          : allItems.filter(function (item) {
+              return item.group === activeGroup;
+            });
+    }
 
     // Sort the full group BEFORE the overview cap so "전체" = first 15 of the
     // fully-sorted list, and a category tab = all of that category, sorted.
+    // A search shows ALL matches (the cap only applies to unsearched "전체").
     var sorted = sortItems(filtered);
     var visible =
-      activeGroup === "전체" ? sorted.slice(0, OVERVIEW_LIMIT) : sorted;
+      !q && activeGroup === "전체" ? sorted.slice(0, OVERVIEW_LIMIT) : sorted;
 
     if (visible.length === 0) {
+      els.feedEmpty.textContent = q
+        ? "‘" + searchQuery.trim() + "’ 검색 결과가 없어요"
+        : "이 분류는 오늘 추천이 없어요";
       els.feedEmpty.hidden = false;
       return;
     }
@@ -1094,6 +1117,13 @@
 
   function setActiveGroup(group) {
     activeGroup = group;
+    // Picking a category clears any active search — search and category are
+    // alternative views of the list, not stacked filters.
+    if (searchQuery) {
+      searchQuery = "";
+      els.searchInput.value = "";
+      els.searchClear.hidden = true;
+    }
     var chips = els.filters.querySelectorAll(".chip");
     chips.forEach(function (chip) {
       var on = chip.getAttribute("data-group") === group;
@@ -1107,9 +1137,10 @@
       showBeveragesTab();
       return;
     }
-    // Any other chip → restore the produce UI exactly as before: sorts
-    // visible again, recmenu re-shown iff it has picks (renderRecmenu is a
-    // pure repaint from selected/top3Names — it does NOT touch selection).
+    // Any other chip → restore the produce UI exactly as before: search box +
+    // sorts visible again, recmenu re-shown iff it has picks (renderRecmenu is
+    // a pure repaint from selected/top3Names — it does NOT touch selection).
+    els.searchbar.hidden = false;
     els.sorts.hidden = false;
     renderRecmenu();
     renderCards();
@@ -1168,6 +1199,22 @@
   }
 
   els.retry.addEventListener("click", load);
+
+  // Free-text search: filter the card list by ingredient name as the user
+  // types. Empty query restores the active category view.
+  function applySearch(value) {
+    searchQuery = value;
+    els.searchClear.hidden = value.trim() === "";
+    renderCards();
+  }
+  els.searchInput.addEventListener("input", function () {
+    applySearch(els.searchInput.value);
+  });
+  els.searchClear.addEventListener("click", function () {
+    els.searchInput.value = "";
+    applySearch("");
+    els.searchInput.focus();
+  });
 
   els.filters.addEventListener("click", function (event) {
     var chip = event.target.closest(".chip");
