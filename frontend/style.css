@@ -788,6 +788,44 @@ body.has-actionbar .app {
   display: none;
 }
 
+/* ---------- recent searches ---------- */
+.recent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -4px 0 12px;
+}
+/* display:flex above would defeat [hidden] — guard it */
+.recent[hidden] {
+  display: none;
+}
+.recent__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 9px 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.recent__del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--gray-pill);
+  color: var(--ink-faint);
+  font-size: 10px;
+  line-height: 1;
+}
+
 .filters {
   display: flex;
   gap: 8px;

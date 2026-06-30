@@ -38,6 +38,7 @@
     searchbar: document.getElementById("searchbar"),
     searchInput: document.getElementById("search-input"),
     searchClear: document.getElementById("search-clear"),
+    recent: document.getElementById("recent"),
   };
 
   // Selected ingredient names (server resolves combo recipes by name).
@@ -181,6 +182,8 @@
     pickBtn.addEventListener("click", function (event) {
       // Must not trigger the card's tap-to-expand.
       event.stopPropagation();
+      // Searched, then picked a result → remember that search term.
+      if (searchQuery.trim()) addRecent(searchQuery.trim());
       toggleSelected(item.name);
     });
 
@@ -811,6 +814,7 @@
     if (state !== "cards") {
       els.feedEmpty.hidden = true;
       els.recmenu.hidden = true;
+      els.recent.hidden = true;
     }
   }
 
@@ -1034,6 +1038,7 @@
     els.recmenu.hidden = true;
     els.sorts.hidden = true;
     els.searchbar.hidden = true;
+    els.recent.hidden = true;
 
     if (bevItems !== null) {
       renderBeverages("list");
@@ -1200,6 +1205,75 @@
 
   els.retry.addEventListener("click", load);
 
+  // ----- recent searches (localStorage-backed, newest first, max 8) -----
+  var RECENT_KEY = "baguni_recent";
+  var RECENT_MAX = 8;
+
+  function getRecent() {
+    try {
+      var arr = JSON.parse(window.localStorage.getItem(RECENT_KEY) || "[]");
+      return Array.isArray(arr)
+        ? arr.filter(function (t) {
+            return typeof t === "string" && t.trim();
+          })
+        : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function saveRecent(list) {
+    try {
+      window.localStorage.setItem(
+        RECENT_KEY,
+        JSON.stringify(list.slice(0, RECENT_MAX))
+      );
+    } catch (e) {
+      /* private mode / quota — recents just won't persist */
+    }
+  }
+  function addRecent(term) {
+    term = String(term).trim();
+    if (!term) return;
+    var list = getRecent().filter(function (t) {
+      return t.toLowerCase() !== term.toLowerCase();
+    });
+    list.unshift(term);
+    saveRecent(list);
+  }
+  // Build recent-term chips (each = a search button containing an ✕ delete).
+  // Returns the count so the caller can decide visibility.
+  function renderRecent() {
+    var list = getRecent();
+    els.recent.innerHTML = "";
+    list.forEach(function (term) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "recent__chip";
+      chip.setAttribute("data-term", term);
+      chip.appendChild(document.createTextNode(term));
+      var del = document.createElement("span");
+      del.className = "recent__del";
+      del.setAttribute("data-del", "1");
+      del.setAttribute("aria-label", term + " 삭제");
+      del.textContent = "✕";
+      chip.appendChild(del);
+      els.recent.appendChild(chip);
+    });
+    return list.length;
+  }
+  // Recent chips appear only when the search box is focused AND empty.
+  function showRecent() {
+    if (searchQuery.trim() !== "") {
+      els.recent.hidden = true;
+      return;
+    }
+    els.recent.hidden = renderRecent() === 0;
+  }
+  function hideRecent() {
+    els.recent.hidden = true;
+  }
+
+  // ----- search wiring -----
   // Free-text search: filter the card list by ingredient name as the user
   // types. Empty query restores the active category view.
   function applySearch(value) {
@@ -1209,11 +1283,55 @@
   }
   els.searchInput.addEventListener("input", function () {
     applySearch(els.searchInput.value);
+    if (els.searchInput.value.trim() === "") showRecent();
+    else hideRecent();
+  });
+  els.searchInput.addEventListener("focus", showRecent);
+  // Enter = commit the search → record it as a recent term.
+  els.searchInput.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter") return;
+    var t = els.searchInput.value.trim();
+    if (t) addRecent(t);
+    hideRecent();
+    els.searchInput.blur();
   });
   els.searchClear.addEventListener("click", function () {
     els.searchInput.value = "";
     applySearch("");
     els.searchInput.focus();
+    showRecent();
+  });
+  // Tap a recent chip → re-run that search; tap its ✕ → delete just that term.
+  els.recent.addEventListener("click", function (event) {
+    event.stopPropagation(); // don't let the outside-close handler fire
+    var chip = event.target.closest(".recent__chip");
+    if (!chip) return;
+    var term = chip.getAttribute("data-term");
+    if (event.target.closest(".recent__del")) {
+      saveRecent(
+        getRecent().filter(function (t) {
+          return t.toLowerCase() !== String(term).toLowerCase();
+        })
+      );
+      showRecent();
+      els.searchInput.focus();
+      return;
+    }
+    els.searchInput.value = term;
+    applySearch(term);
+    addRecent(term);
+    hideRecent();
+    els.searchInput.focus();
+  });
+  // A click anywhere outside the search area closes the recent list.
+  document.addEventListener("click", function (event) {
+    if (els.recent.hidden) return;
+    if (
+      els.searchbar.contains(event.target) ||
+      els.recent.contains(event.target)
+    )
+      return;
+    hideRecent();
   });
 
   els.filters.addEventListener("click", function (event) {
